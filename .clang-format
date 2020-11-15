@@ -1,0 +1,7 @@
+# See: https://google.github.io/styleguide/cppguide.html
+---
+BasedOnStyle: Google
+UseTab: Never
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
