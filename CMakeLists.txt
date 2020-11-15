@@ -50,14 +50,14 @@ get_filename_component(APP_PATH "${CMAKE_CURRENT_SOURCE_DIR}/" ABSOLUTE)
 
 include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
 
-list(APPEND SOURCE_FILES    ${CORE_SOURCE_FILES})
+list(APPEND SOURCE_FILES src/visualizer/vector_field_simulator.cc ${CORE_SOURCE_FILES})
 
 list(APPEND TEST_FILES)
 
 ci_make_app(
         APP_NAME        vector-field-grapher
         CINDER_PATH     ${CINDER_PATH}
-        SOURCES         ${SOURCE_FILES}
+        SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES}
         INCLUDES        include
 )
 
