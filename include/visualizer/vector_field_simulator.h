@@ -5,6 +5,9 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
+#include <OpenGL/glu.h>
+#include "cinder/ImageIo.h"
+#include <math.h>
 
 namespace vectorfield {
 
@@ -31,9 +34,12 @@ class FieldSimulator : public ci::app::App {
    */
   void update() override;
 
+  void setup() override;
+
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
+  ci::gl::Texture2dRef texture;
 
 
 };
