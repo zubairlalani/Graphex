@@ -61,19 +61,9 @@ void FieldSimulator::setup() {
   mParams->addButton("Increase Speed", [ & ]() { button( 3 ); });
   mParams->addButton("Decrease Speed", [ & ]() { button( 4 ); });
   mParams->addButton("Clear", [ & ]() { button( 5 ); });*/
-  mParams->addParam( "Function i-Comp", &x_component_ );
 
-  //parser.compile(expression)
-  double x = 5;
-  double y = 20;
-  table.add_variable("x", x);
-  table.add_variable("y", y);
-  table.add_constants();
-
-  expr.register_symbol_table(table);
-  parser.compile(expression, expr);
-
-  std::cout << expr.value() << std::endl;
+  mParams->addParam( "Function i-Comp", &i_component_ );
+  mParams->addParam( "Function j-Comp", &j_component_ );
 
 }
 
@@ -112,11 +102,29 @@ void FieldSimulator::draw() {
 }
 
 void FieldSimulator::update() {
-
 }
 
 void FieldSimulator::button(size_t id) {
+  if(id == 0) {
+    double x = 3;
+    double y = 9;
+    table.add_variable("x", x);
+    table.add_variable("y", y);
+    table.add_constants();
 
+    i_expr_.register_symbol_table(table);
+    j_expr_.register_symbol_table(table);
+
+    parser.compile(i_component_, i_expr_);
+    parser.compile(j_component_, j_expr_);
+
+    std::cout << "PRINTING CALCULATION: " << std::endl;
+    std::cout << i_component_ << std::endl;
+    std::cout << j_component_ << std::endl;
+    std::cout << i_expr_.value() << std::endl;
+    std::cout << j_expr_.value() << std::endl;
+    std::cout << "" << std::endl;
+  }
 }
 } // namespace visualizer
 } // namespace vectorfield

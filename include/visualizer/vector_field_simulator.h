@@ -63,10 +63,12 @@ class FieldSimulator : public ci::app::App {
   //ci::glm::vec2 mPosition;
   ci::gl::Texture2dRef mTextTexture;
   ci::params::InterfaceGlRef mParams;
-  std::string x_component_;
+  std::string i_component_;
+  std::string j_component_;
 
   exprtk::symbol_table<double> table;
-  exprtk::expression<double> expr;
+  exprtk::expression<double> i_expr_;
+  exprtk::expression<double> j_expr_;
   exprtk::parser<double> parser;
   const std::string expression = "x + y^2 + 3*6";
 
