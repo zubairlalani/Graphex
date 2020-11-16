@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 11)
 project(vector-field-grapher)
 
-file(GLOB RESOURCE_LIST CONFIGURE_DEPENDS
-        "${CINDER_PATH}/blocks/PretzelGui/resources/**"
-        )
 
 # This tells the compiler to not aggressively optimize and
 # to include debugging information so that the debugger
@@ -35,6 +32,18 @@ if(${CMAKE_VERSION} VERSION_LESS 3.14)
 endif()
 
 FetchContent_Declare(
+        exprtk
+        GIT_REPOSITORY https://github.com/zubairlalani/exprtk
+)
+
+FetchContent_GetProperties(exprtk)
+if(NOT exprtk_POPULATED)
+    FetchContent_Populate(exprtk)
+    add_library(exprtk INTERFACE)
+    target_include_directories(exprtk INTERFACE ${exprtk_SOURCE_DIR}/include)
+endif()
+
+FetchContent_Declare(
         catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
         GIT_TAG v2.x
@@ -61,11 +70,8 @@ list(APPEND TEST_FILES)
 ci_make_app(
         APP_NAME        vector-field-grapher
         CINDER_PATH     ${CINDER_PATH}
-        SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES}
+        SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES} include/exprtk.hpp
         INCLUDES        include
-        ##LIBRARIES       mylibrary
-        ##BLOCKS          PretzelGui
-        ##RESOURCES       ${RESOURCE_LIST}
 )
 
 ci_make_app(

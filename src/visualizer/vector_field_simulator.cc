@@ -61,8 +61,19 @@ void FieldSimulator::setup() {
   mParams->addButton("Increase Speed", [ & ]() { button( 3 ); });
   mParams->addButton("Decrease Speed", [ & ]() { button( 4 ); });
   mParams->addButton("Clear", [ & ]() { button( 5 ); });*/
-  mParams->addParam( "Function", &mFunction );
+  mParams->addParam( "Function i-Comp", &x_component_ );
 
+  //parser.compile(expression)
+  double x = 5;
+  double y = 20;
+  table.add_variable("x", x);
+  table.add_variable("y", y);
+  table.add_constants();
+
+  expr.register_symbol_table(table);
+  parser.compile(expression, expr);
+
+  std::cout << expr.value() << std::endl;
 
 }
 

@@ -8,6 +8,8 @@
 #include <OpenGL/glu.h>
 #include "cinder/ImageIo.h"
 #include <math.h>
+#include <exprtk.hpp>
+
 //#include "/Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/Cinder-UI/src/UI.h"
 //#include </Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/PretzelGui/src/Resource.h>
 //#include <../blocks/PretzelGui/src/pretzel/PretzelGui.h>
@@ -61,7 +63,14 @@ class FieldSimulator : public ci::app::App {
   //ci::glm::vec2 mPosition;
   ci::gl::Texture2dRef mTextTexture;
   ci::params::InterfaceGlRef mParams;
-  std::string mFunction;
+  std::string x_component_;
+
+  exprtk::symbol_table<double> table;
+  exprtk::expression<double> expr;
+  exprtk::parser<double> parser;
+  const std::string expression = "x + y^2 + 3*6";
+
+  //exprtk::symbol_table<std::string> symbolTable;
 
 };
 
