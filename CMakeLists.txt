@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 11)
 project(vector-field-grapher)
 
+file(GLOB RESOURCE_LIST CONFIGURE_DEPENDS
+        "${CINDER_PATH}/blocks/PretzelGui/resources/**"
+        )
+
 # This tells the compiler to not aggressively optimize and
 # to include debugging information so that the debugger
 # can properly read what's going on.
@@ -19,7 +23,7 @@ if(MSVC)
     add_compile_options(/W3 /WX)
 else()
     # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wpedantic -Werror)
+    ##add_compile_options(-Wall -Wpedantic -Werror)
 endif()
 
 # FetchContent added in CMake 3.11, downloads during the configure step
@@ -59,6 +63,9 @@ ci_make_app(
         CINDER_PATH     ${CINDER_PATH}
         SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES}
         INCLUDES        include
+        ##LIBRARIES       mylibrary
+        ##BLOCKS          PretzelGui
+        ##RESOURCES       ${RESOURCE_LIST}
 )
 
 ci_make_app(

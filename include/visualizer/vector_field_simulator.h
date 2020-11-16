@@ -8,10 +8,16 @@
 #include <OpenGL/glu.h>
 #include "cinder/ImageIo.h"
 #include <math.h>
+//#include "/Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/Cinder-UI/src/UI.h"
+//#include </Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/PretzelGui/src/Resource.h>
+//#include <../blocks/PretzelGui/src/pretzel/PretzelGui.h>
+
 
 namespace vectorfield {
 
 namespace visualizer {
+
+//using namespace reza::ui;
 
 class FieldSimulator : public ci::app::App {
  public:
@@ -36,11 +42,26 @@ class FieldSimulator : public ci::app::App {
 
   void setup() override;
 
+  void button(size_t id);
+
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
-  ci::gl::Texture2dRef texture;
-
+  const size_t kGraphMargin = 50;
+  const size_t kInputBoxHeight = 100;
+  //std::vector<ci::mat4> matrices_;
+  //ci::gl::Texture2dRef texture;
+  //ci::TextBox textBox;
+  /*
+  SuperCanvasRef mUi;
+  float mRed = 0.0;
+  float mGreen = 0.0;
+  float mBlue = 0.0;*/
+  //pretzel::PretzelGuiRef gui;
+  //ci::glm::vec2 mPosition;
+  ci::gl::Texture2dRef mTextTexture;
+  ci::params::InterfaceGlRef mParams;
+  std::string mFunction;
 
 };
 
