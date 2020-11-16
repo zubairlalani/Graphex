@@ -10,11 +10,6 @@
 #include <math.h>
 #include <exprtk.hpp>
 
-//#include "/Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/Cinder-UI/src/UI.h"
-//#include </Users/zubairlalani/Desktop/cinder_0.9.2_mac/blocks/PretzelGui/src/Resource.h>
-//#include <../blocks/PretzelGui/src/pretzel/PretzelGui.h>
-
-
 namespace vectorfield {
 
 namespace visualizer {
@@ -51,17 +46,12 @@ class FieldSimulator : public ci::app::App {
   const size_t kWindowSize = 700; // Size of the cinder window
   const size_t kGraphMargin = 50;
   const size_t kInputBoxHeight = 100;
+  const int kScale = 10;
+
   //std::vector<ci::mat4> matrices_;
-  //ci::gl::Texture2dRef texture;
-  //ci::TextBox textBox;
-  /*
-  SuperCanvasRef mUi;
-  float mRed = 0.0;
-  float mGreen = 0.0;
-  float mBlue = 0.0;*/
-  //pretzel::PretzelGuiRef gui;
+  ci::gl::Texture2dRef texture;
+
   //ci::glm::vec2 mPosition;
-  ci::gl::Texture2dRef mTextTexture;
   ci::params::InterfaceGlRef mParams;
   std::string i_component_;
   std::string j_component_;
@@ -71,7 +61,7 @@ class FieldSimulator : public ci::app::App {
   exprtk::expression<double> j_expr_;
   exprtk::parser<double> parser;
   const std::string expression = "x + y^2 + 3*6";
-
+  //std::map<std::pair<int, int>, glm::vec2> vectors_;
   //exprtk::symbol_table<std::string> symbolTable;
 
 };

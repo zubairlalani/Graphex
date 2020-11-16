@@ -10,44 +10,14 @@ FieldSimulator::FieldSimulator() {
 }
 
 void FieldSimulator::setup() {
-  //gui = pretzel::PretzelGui::create("Circle settings");
   //mPosition = getWindowCenter();
   //gui->addSlider("Position", &mPosition, glm::vec2(0,0), getWindowSize());
-  //auto img = loadImage( loadAsset( "vector.png" ) );
-  //texture = ci::gl::Texture2d::create(img);
+  auto img = loadImage( loadAsset( "vector.png" ) );
+  auto im2 = loadAsset("vector.png");
+  texture = ci::gl::Texture2d::create(img);
   //mUi = SuperCanvas::create("hello");
   //mUi->addSpacer();
-  /*
-  mUi->addLabel( "WE CAN DO BETTER THAN PARAMS! ^_^", FontSize::SMALL );
-  mUi->addLabel( "DOUBLE CLICK BASIC TO MINIMIZE", FontSize::SMALL );
-  mUi->addLabel( "CLICK BASIC AND DRAG TO MOVE", FontSize::SMALL );
-  mUi->addSpacer();
 
-  mUi->addLabel( "BASIC SLIDER:", FontSize::SMALL );
-  mUi->addSliderf( "RED", &mRed );
-
-  mUi->addSpacer();
-  mUi->addLabel( "SLIDER W/ OPTION: CROSSFADER", FontSize::SMALL );
-  mUi->addSliderf( "GREEN", &mGreen, 0.0, 1.0, Sliderf::Format().crossFader() );
-
-  mUi->addSpacer();
-  mUi->addLabel( "SLIDER W/ OPTION: NO LABEL", FontSize::SMALL );
-  mUi->addSliderf( "BLUE", &mBlue, 0.0, 1.0, Sliderf::Format().label( false ) );
-
-  mUi->addMultiSlider( "BG COLOR", {
-      MultiSlider::Data( "RED", &mRed ),
-      MultiSlider::Data( "GREEN", &mGreen ),
-      MultiSlider::Data( "BLUE", &mBlue )
-  } );
-  mUi->autoSizeToFitSubviews();*/
-
-  //mUi->load( getSaveLoadPath() );
-
-  ci::TextBox tbox = ci::TextBox().alignment(ci::TextBox::RIGHT).text("mStr").size(ci::ivec2(kWindowSize/2, kWindowSize/2));
-  tbox.setColor(ci::ColorA(1,1,1,1));
-  tbox.setBackgroundColor(ci::ColorA(0.0f, 0.0f, 0.0f, 0.0f));
-  tbox.setPremultiplied(true);
-  mTextTexture = ci::gl::Texture2d::create(tbox.render());
   mParams = ci::params::InterfaceGl::create(
       getWindow(), "App parameters",
       getWindow()->toPixels( ci::ivec2( 400, 120 ) )
@@ -71,26 +41,29 @@ void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(0, 100, 100), true);
 
-  mParams->draw();
-  /*
-  ci::gl::ScopedBlend alphaBlend(true);
-  ci::gl::ScopedBlendPremult preAlpha();
-  ci::gl::ScopedColor color(ci::Color(1, 1, 1));
-  ci::gl::draw(mTextTexture);
-  */
-  ci::gl::ScopedBlendPremult blend;
-  ci::gl::draw( mTextTexture );
+  //ci::gl::draw(texture);
 
+  mParams->draw();
+
+
+  float arrow_size = 30.0f;
+  glm::vec3 start(kWindowSize/2, kWindowSize/2, 0);
+  glm::vec3 end(kWindowSize/2 + arrow_size, kWindowSize/2, 0);
+  ci::gl::drawVector(start, end, 12.0f, 6.0f);
   //gui->draw();
 
   ci::gl::drawLine(glm::vec2(kWindowSize/2, kGraphMargin),
                    glm::vec2(kWindowSize/2, kWindowSize - kGraphMargin - kInputBoxHeight));
   ci::gl::drawLine(glm::vec2(kGraphMargin, (kWindowSize-kInputBoxHeight)/2),
                    glm::vec2(kWindowSize-kGraphMargin, (kWindowSize-kInputBoxHeight)/2));
-  //ci::gl::draw(texture);
-  ci::gl::drawSolidRect(ci::Rectf(glm::vec2(60, 60), glm::vec2(70, 100)));
-  ci::gl::drawSolidTriangle(glm::vec2(50, 100), glm::vec2(80, 100), glm::vec2(65, 110));
 
+
+
+
+  //ci::gl::drawSolidRect(ci::Rectf(glm::vec2(60, 60), glm::vec2(70, 100)));
+  //ci::gl::drawSolidTriangle(glm::vec2(50, 100), glm::vec2(80, 100), glm::vec2(65, 110));
+
+  /*
   ci::gl::pushModelView();
   ci::gl::translate(60, 60);
   //ci::gl::scale(glm::vec2(2, 2));
@@ -98,16 +71,18 @@ void FieldSimulator::draw() {
   ci::gl::translate(-60, -60);
   ci::gl::drawSolidRect(ci::Rectf(glm::vec2(60, 60), glm::vec2(70, 100)));
   ci::gl::drawSolidTriangle(glm::vec2(50, 100), glm::vec2(80, 100), glm::vec2(65, 110));
-  ci::gl::popModelView();
+  ci::gl::popModelView();*/
 }
 
 void FieldSimulator::update() {
+
 }
 
 void FieldSimulator::button(size_t id) {
   if(id == 0) {
-    double x = 3;
-    double y = 9;
+
+    double x = 1;
+    double y = 5;
     table.add_variable("x", x);
     table.add_variable("y", y);
     table.add_constants();
@@ -124,6 +99,33 @@ void FieldSimulator::button(size_t id) {
     std::cout << i_expr_.value() << std::endl;
     std::cout << j_expr_.value() << std::endl;
     std::cout << "" << std::endl;
+    /*
+    int x;
+    int y;
+
+    table.add_constants();
+    for(x=-kScale; x< kScale; x++) {
+      for(y=-kScale; y < kScale; y++) {
+        table.add_variable("x", x);
+        table.add_variable("y", y);
+        i_expr_.register_symbol_table(table);
+        j_expr_.register_symbol_table(table);
+        parser.compile(i_component_, i_expr_);
+        parser.compile(j_component_, j_expr_);
+
+        table.clear();
+
+        //vectors_[{x, y}] = glm::vec2(i_expr_, j_expr_);
+
+        std::cout << "PRINTING CALCULATION: " << std::endl;
+        std::cout << i_component_ << std::endl;
+        std::cout << j_component_ << std::endl;
+        std::cout << i_expr_.value() << std::endl;
+        std::cout << j_expr_.value() << std::endl;
+        std::cout << "" << std::endl;
+      }
+    } */
+
   }
 }
 } // namespace visualizer
