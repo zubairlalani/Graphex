@@ -35,6 +35,18 @@ void FieldSimulator::setup() {
   mParams->addParam( "Function i-Comp", &i_component_ );
   mParams->addParam( "Function j-Comp", &j_component_ );
 
+  /*
+  const std::string integrate_expr = "x^3";
+  double x;
+  table.add_variable("x", x);
+  i_expr_.register_symbol_table(table);
+  parser.compile(integrate_expr, i_expr_);
+  double area = exprtk::integrate(i_expr_, x, -1.0, 1.0);
+  x = 12.0;
+  double derivation = exprtk::derivative(i_expr_, x);
+  std::cout << "AREA: " << area << std::endl;
+  std::cout << "SLOPE: " << derivation << std::endl;*/
+
 }
 
 void FieldSimulator::draw() {
@@ -80,11 +92,13 @@ void FieldSimulator::update() {
 
 void FieldSimulator::button(size_t id) {
   if(id == 0) {
-
-    double x = 1;
-    double y = 5;
-    table.add_variable("x", x);
-    table.add_variable("y", y);
+    /*
+    int x = -10;
+    int y = -10;
+    double valx = (double)x;
+    double valy = (double)y;
+    table.add_variable("x", valx);
+    table.add_variable("y", valy);
     table.add_constants();
 
     i_expr_.register_symbol_table(table);
@@ -98,22 +112,23 @@ void FieldSimulator::button(size_t id) {
     std::cout << j_component_ << std::endl;
     std::cout << i_expr_.value() << std::endl;
     std::cout << j_expr_.value() << std::endl;
-    std::cout << "" << std::endl;
-    /*
-    int x;
-    int y;
+    std::cout << "" << std::endl;*/
 
-    table.add_constants();
-    for(x=-kScale; x< kScale; x++) {
-      for(y=-kScale; y < kScale; y++) {
-        table.add_variable("x", x);
-        table.add_variable("y", y);
+
+
+    for(int x=-kScale; x <= kScale; x++) {
+      for(int y=-kScale; y <= kScale; y++) {
+        double valx = (double)x;
+        double valy = (double)y;
+        table.add_variable("x", valx);
+        table.add_variable("y", valy);
+        table.add_constants();
+
         i_expr_.register_symbol_table(table);
         j_expr_.register_symbol_table(table);
+
         parser.compile(i_component_, i_expr_);
         parser.compile(j_component_, j_expr_);
-
-        table.clear();
 
         //vectors_[{x, y}] = glm::vec2(i_expr_, j_expr_);
 
@@ -123,8 +138,10 @@ void FieldSimulator::button(size_t id) {
         std::cout << i_expr_.value() << std::endl;
         std::cout << j_expr_.value() << std::endl;
         std::cout << "" << std::endl;
+
+        //table.clear();
       }
-    } */
+    }
 
   }
 }
