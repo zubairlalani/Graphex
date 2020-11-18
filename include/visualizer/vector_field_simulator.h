@@ -47,6 +47,7 @@ class FieldSimulator : public ci::app::App {
   const size_t kGraphMargin = 50;
   const size_t kInputBoxHeight = 100;
   const int kScale = 10;
+  const int kVectorScale = 10;
 
   //std::vector<ci::mat4> matrices_;
   ci::gl::Texture2dRef texture;
@@ -60,8 +61,10 @@ class FieldSimulator : public ci::app::App {
   exprtk::expression<double> i_expr_;
   exprtk::expression<double> j_expr_;
   exprtk::parser<double> parser;
-  const std::string expression = "x + y^2 + 3*6";
   std::map<std::pair<int, int>, glm::vec2> field_vectors_;
+  glm::vec2 origin_;
+  double x_unit_;
+  double y_unit_;
   //exprtk::symbol_table<std::string> symbolTable;
 
 };

@@ -11,31 +11,32 @@ FieldSimulator::FieldSimulator() {
 
 void FieldSimulator::setup() {
   //mPosition = getWindowCenter();
-  //gui->addSlider("Position", &mPosition, glm::vec2(0,0), getWindowSize());
+  /*
   auto img = loadImage( loadAsset( "vector.png" ) );
   auto im2 = loadAsset("vector.png");
-  texture = ci::gl::Texture2d::create(img);
-  //mUi = SuperCanvas::create("hello");
-  //mUi->addSpacer();
+  texture = ci::gl::Texture2d::create(img);*/
 
   mParams = ci::params::InterfaceGl::create(
       getWindow(), "App parameters",
-      getWindow()->toPixels( ci::ivec2( 400, 120 ) )
+      getWindow()->toPixels( ci::ivec2( 200, 200 ) )
   );
   mParams->setPosition(glm::vec2(50, 500));
 
-  mParams->addButton("Save Function", [ & ]() { button( 0 ); });
-  /*
-  mParams->addButton("Medium Particle", [ & ]() { button( 1 ); });
-  mParams->addButton("Large Particle", [ & ]() { button( 2 ); });
-  mParams->addButton("Increase Speed", [ & ]() { button( 3 ); });
-  mParams->addButton("Decrease Speed", [ & ]() { button( 4 ); });
-  mParams->addButton("Clear", [ & ]() { button( 5 ); });*/
+  mParams->addButton("Draw", [ & ]() { button( 0 ); });
+  mParams->addButton("Clear", [ & ]() { button( 1 ); });
 
   mParams->addParam( "Function i-Comp", &i_component_ );
   mParams->addParam( "Function j-Comp", &j_component_ );
 
+  origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2); //- kInputBoxHeight
+  std::cout << "ORIGIN: " << origin_ << std::endl;
+
+  x_unit_ = static_cast<double>(kWindowSize - 2*kGraphMargin)/(2*kScale);
+  y_unit_ = x_unit_;
+  std::cout << x_unit_ << std::endl;
   /*
+  Experimenting with integration/derivatives:
+
   const std::string integrate_expr = "x^3";
   double x;
   table.add_variable("x", x);
@@ -59,17 +60,38 @@ void FieldSimulator::draw() {
 
 
   float arrow_size = 30.0f;
-  glm::vec3 start(kWindowSize/2, kWindowSize/2, 0);
-  glm::vec3 end(kWindowSize/2 + arrow_size, kWindowSize/2, 0);
-  ci::gl::drawVector(start, end, 12.0f, 6.0f);
+
   //gui->draw();
 
   ci::gl::drawLine(glm::vec2(kWindowSize/2, kGraphMargin),
-                   glm::vec2(kWindowSize/2, kWindowSize - kGraphMargin - kInputBoxHeight));
-  ci::gl::drawLine(glm::vec2(kGraphMargin, (kWindowSize-kInputBoxHeight)/2),
-                   glm::vec2(kWindowSize-kGraphMargin, (kWindowSize-kInputBoxHeight)/2));
+                   glm::vec2(kWindowSize/2, kWindowSize - kGraphMargin )); //- kInputBoxHeight
+  ci::gl::drawLine(glm::vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
+                   glm::vec2(kWindowSize-kGraphMargin, (kWindowSize)/2)); //-kInputBoxHeight
 
+  //ci::gl::drawSolidCircle(origin_, 5);
 
+  // Create a map iterator and point to beginning of map
+  auto it = field_vectors_.begin();
+  // Iterate over the map using c++11 range based for loop
+
+  for (auto const& element : field_vectors_) {
+    /*
+    ci::gl::drawSolidCircle(glm::vec2(origin_.x + x_unit_ *element.first.first,
+                                      origin_.y + y_unit_ *element.first.second), 5);*/
+
+    glm::vec3 start(origin_.x + x_unit_ *element.first.first, origin_.y + y_unit_ *element.first.second, 0);
+    glm::vec3 end(origin_.x + x_unit_ *element.first.first + x_unit_ * element.second.x,
+                  origin_.y + y_unit_ *element.first.second + y_unit_*element.second.y,
+                  0);
+    ci::gl::drawVector(start, end, 12.0f, 6.0f);
+    /*
+    std::cout << "{ "<< element.first.first << ", "
+              << element.first.second << "} : "
+              << origin_.x + x_unit_ *element.first.first << ", "
+              << origin_.y + y_unit_ *element.first.second
+              << std::endl;
+              */
+  }
 
 
   //ci::gl::drawSolidRect(ci::Rectf(glm::vec2(60, 60), glm::vec2(70, 100)));
@@ -92,32 +114,9 @@ void FieldSimulator::update() {
 
 void FieldSimulator::button(size_t id) {
   if(id == 0) {
-    /*
-    int x = -10;
-    int y = -10;
-    double valx = (double)x;
-    double valy = (double)y;
-    table.add_variable("x", valx);
-    table.add_variable("y", valy);
-    table.add_constants();
 
-    i_expr_.register_symbol_table(table);
-    j_expr_.register_symbol_table(table);
-
-    parser.compile(i_component_, i_expr_);
-    parser.compile(j_component_, j_expr_);
-
-    std::cout << "PRINTING CALCULATION: " << std::endl;
-    std::cout << i_component_ << std::endl;
-    std::cout << j_component_ << std::endl;
-    std::cout << i_expr_.value() << std::endl;
-    std::cout << j_expr_.value() << std::endl;
-    std::cout << "" << std::endl;*/
-
-
-
-    for(int x=-kScale; x <= kScale; x++) {
-      for(int y=-kScale; y <= kScale; y++) {
+    for(int x=-kVectorScale; x <= kVectorScale; x++) {
+      for(int y=-kVectorScale; y <= kVectorScale; y++) {
         double valx = (double)x;
         double valy = (double)y;
         table.add_variable("x", valx);
@@ -147,6 +146,8 @@ void FieldSimulator::button(size_t id) {
     std::cout << "PRINTING: " << std::endl;
     std::cout << field_vectors_[{5, 7}] << std::endl;
 
+  } else if(id == 1) {
+    field_vectors_.clear();
   }
 }
 } // namespace visualizer
