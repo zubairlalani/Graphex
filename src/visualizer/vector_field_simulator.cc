@@ -130,18 +130,22 @@ void FieldSimulator::button(size_t id) {
         parser.compile(i_component_, i_expr_);
         parser.compile(j_component_, j_expr_);
 
-        //vectors_[{x, y}] = glm::vec2(i_expr_, j_expr_);
+        field_vectors_[{x, y}] = glm::vec2(i_expr_.value(), j_expr_.value());
 
+        /*
         std::cout << "PRINTING CALCULATION: " << std::endl;
         std::cout << i_component_ << std::endl;
         std::cout << j_component_ << std::endl;
         std::cout << i_expr_.value() << std::endl;
         std::cout << j_expr_.value() << std::endl;
         std::cout << "" << std::endl;
-
+        */
         //table.clear();
       }
     }
+
+    std::cout << "PRINTING: " << std::endl;
+    std::cout << field_vectors_[{5, 7}] << std::endl;
 
   }
 }

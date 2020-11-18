@@ -61,7 +61,7 @@ class FieldSimulator : public ci::app::App {
   exprtk::expression<double> j_expr_;
   exprtk::parser<double> parser;
   const std::string expression = "x + y^2 + 3*6";
-  //std::map<std::pair<int, int>, glm::vec2> vectors_;
+  std::map<std::pair<int, int>, glm::vec2> field_vectors_;
   //exprtk::symbol_table<std::string> symbolTable;
 
 };
