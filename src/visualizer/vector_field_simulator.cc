@@ -52,7 +52,7 @@ void FieldSimulator::setup() {
 
 void FieldSimulator::draw() {
 
-  ci::gl::clear(ci::Color(0, 100, 100), true);
+  ci::gl::clear(ci::Color(0, 0, 0), true);
 
   //ci::gl::draw(texture);
 
@@ -83,6 +83,9 @@ void FieldSimulator::draw() {
     glm::vec3 end(origin_.x + x_unit_ *element.first.first + x_unit_ * element.second.x,
                   origin_.y + y_unit_ *element.first.second + y_unit_*element.second.y,
                   0);
+
+
+    //ci::gl::color(250, 250, 250);
     ci::gl::drawVector(start, end, 12.0f, 6.0f);
     /*
     std::cout << "{ "<< element.first.first << ", "
@@ -119,15 +122,15 @@ void FieldSimulator::button(size_t id) {
       for(int y=-kVectorScale; y <= kVectorScale; y++) {
         double valx = (double)x;
         double valy = (double)y;
-        table.add_variable("x", valx);
-        table.add_variable("y", valy);
-        table.add_constants();
+        symbol_table_.add_variable("x", valx);
+        symbol_table_.add_variable("y", valy);
+        symbol_table_.add_constants();
 
-        i_expr_.register_symbol_table(table);
-        j_expr_.register_symbol_table(table);
+        i_expr_.register_symbol_table(symbol_table_);
+        j_expr_.register_symbol_table(symbol_table_);
 
-        parser.compile(i_component_, i_expr_);
-        parser.compile(j_component_, j_expr_);
+        parser_.compile(i_component_, i_expr_);
+        parser_.compile(j_component_, j_expr_);
 
         field_vectors_[{x, y}] = glm::vec2(i_expr_.value(), j_expr_.value());
 
