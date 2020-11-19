@@ -13,12 +13,14 @@ void FieldSimulator::setup() {
 
   mParams = ci::params::InterfaceGl::create(
       getWindow(), "App parameters",
-      getWindow()->toPixels( ci::ivec2( 200, 200 ) )
+      getWindow()->toPixels( ci::ivec2( 300, 200 ) )
   );
   mParams->setPosition(glm::vec2(50, 500));
 
   mParams->addButton("Draw", [ & ]() { button( 0 ); });
   mParams->addButton("Clear", [ & ]() { button( 1 ); });
+  mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
+  mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
 
   mParams->addParam( "Function i-Comp", &i_component_ );
   mParams->addParam( "Function j-Comp", &j_component_ );
@@ -52,8 +54,10 @@ void FieldSimulator::draw() {
 
   //ci::gl::draw(texture);
 
-  mParams->draw();
 
+
+  mParams->draw();
+  ci::gl::color(255, 255, 255);
 
   float arrow_size = 30.0f;
 
@@ -83,6 +87,7 @@ void FieldSimulator::draw() {
 
     //ci::gl::color(250, 250, 250);
     ci::gl::drawVector(start, end, 12.0f, 6.0f);
+
     /*
     std::cout << "{ "<< element.first.first << ", "
               << element.first.second << "} : "
@@ -91,6 +96,8 @@ void FieldSimulator::draw() {
               << std::endl;
               */
   }
+
+  particle_manager_.DrawParticles();
 
 
   //ci::gl::drawSolidRect(ci::Rectf(glm::vec2(60, 60), glm::vec2(70, 100)));
@@ -108,7 +115,7 @@ void FieldSimulator::draw() {
 }
 
 void FieldSimulator::update() {
-
+  particle_manager_.UpdateParticles();
 }
 
 void FieldSimulator::button(size_t id) {
@@ -147,6 +154,10 @@ void FieldSimulator::button(size_t id) {
 
   } else if(id == 1) {
     field_vectors_.clear();
+  } else if(id == 2) {
+    particle_manager_.AddParticle(5, glm::vec2(60, 60));
+  } else if(id == 3) {
+    particle_manager_.ClearParticles();
   }
 }
 } // namespace visualizer

@@ -1,14 +1,19 @@
 #ifndef VECTOR_FIELD_GRAPHER_VECTOR_FIELD_SIMULATOR_H
 #define VECTOR_FIELD_GRAPHER_VECTOR_FIELD_SIMULATOR_H
 
+#include "particle_manager.h"
+
+#include <OpenGL/glu.h>
+#include <math.h>
+
+#include <exprtk.hpp>
+
+#include "cinder/ImageIo.h"
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
-#include <OpenGL/glu.h>
-#include "cinder/ImageIo.h"
-#include <math.h>
-#include <exprtk.hpp>
+
 
 namespace vectorfield {
 
@@ -78,6 +83,7 @@ class FieldSimulator : public ci::app::App {
   glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
   double x_unit_; // Amount of pixels that a single x unit is
   double y_unit_; // Amount of pixels that a single y unit is
+  ParticleManager particle_manager_; // Draws and updates all particles on screen
 
 };
 
