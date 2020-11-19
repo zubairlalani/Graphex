@@ -52,27 +52,18 @@ void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(0, 0, 0), true);
 
-  //ci::gl::draw(texture);
-
-
-
   mParams->draw();
   ci::gl::color(255, 255, 255);
 
   float arrow_size = 30.0f;
-
-  //gui->draw();
 
   ci::gl::drawLine(glm::vec2(kWindowSize/2, kGraphMargin),
                    glm::vec2(kWindowSize/2, kWindowSize - kGraphMargin )); //- kInputBoxHeight
   ci::gl::drawLine(glm::vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
                    glm::vec2(kWindowSize-kGraphMargin, (kWindowSize)/2)); //-kInputBoxHeight
 
-  //ci::gl::drawSolidCircle(origin_, 5);
-
   // Create a map iterator and point to beginning of map
   auto it = field_vectors_.begin();
-  // Iterate over the map using c++11 range based for loop
 
   for (auto const& element : field_vectors_) {
     /*
@@ -84,17 +75,7 @@ void FieldSimulator::draw() {
                   origin_.y + y_unit_ *element.first.second + y_unit_*element.second.y,
                   0);
 
-
-    //ci::gl::color(250, 250, 250);
     ci::gl::drawVector(start, end, 12.0f, 6.0f);
-
-    /*
-    std::cout << "{ "<< element.first.first << ", "
-              << element.first.second << "} : "
-              << origin_.x + x_unit_ *element.first.first << ", "
-              << origin_.y + y_unit_ *element.first.second
-              << std::endl;
-              */
   }
 
   particle_manager_.DrawParticles();
@@ -125,32 +106,11 @@ void FieldSimulator::button(size_t id) {
       for(int y=-kVectorScale; y <= kVectorScale; y++) {
         double valx = (double)x;
         double valy = (double)y;
-        symbol_table_.add_variable("x", valx);
-        symbol_table_.add_variable("y", valy);
-        symbol_table_.add_constants();
 
-        i_expr_.register_symbol_table(symbol_table_);
-        j_expr_.register_symbol_table(symbol_table_);
-
-        parser_.compile(i_component_, i_expr_);
-        parser_.compile(j_component_, j_expr_);
-
-        field_vectors_[{x, y}] = glm::vec2(i_expr_.value(), j_expr_.value());
-
-        /*
-        std::cout << "PRINTING CALCULATION: " << std::endl;
-        std::cout << i_component_ << std::endl;
-        std::cout << j_component_ << std::endl;
-        std::cout << i_expr_.value() << std::endl;
-        std::cout << j_expr_.value() << std::endl;
-        std::cout << "" << std::endl;
-        */
-        //table.clear();
+        field_vectors_[{x, y}]
+            = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
       }
     }
-
-    std::cout << "PRINTING: " << std::endl;
-    std::cout << field_vectors_[{5, 7}] << std::endl;
 
   } else if(id == 1) {
     field_vectors_.clear();

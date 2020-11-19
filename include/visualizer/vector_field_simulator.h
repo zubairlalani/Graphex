@@ -1,12 +1,9 @@
 #ifndef VECTOR_FIELD_GRAPHER_VECTOR_FIELD_SIMULATOR_H
 #define VECTOR_FIELD_GRAPHER_VECTOR_FIELD_SIMULATOR_H
 
-#include "particle_manager.h"
+#include <cmath>
 
-#include <OpenGL/glu.h>
-#include <math.h>
-
-#include <exprtk.hpp>
+#include "../core/function_handler.h"
 
 #include "cinder/ImageIo.h"
 #include "cinder/app/App.h"
@@ -14,12 +11,14 @@
 #include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
 
+#include "particle_manager.h"
+
 
 namespace vectorfield {
 
 namespace visualizer {
 
-//using namespace reza::ui;
+using std::string;
 
 class FieldSimulator : public ci::app::App {
  public:
@@ -49,41 +48,33 @@ class FieldSimulator : public ci::app::App {
    */
   void setup() override;
 
-  /**
-   * Performs an actions depending on which button is clicked
-   * Drawing vector field, clearing vector field, etc
-   * @param id - indicates which button is being pressed
-   */
-  void button(size_t id);
-
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
   const size_t kGraphMargin = 50; // Dist from sides of window that graph axes are drawn
-  const size_t kInputBoxHeight = 100;
+  //const size_t kInputBoxHeight = 100;
   const int kScale = 10; // Determines how many units an axis is broken up into
   const int kVectorScale = 10; // Number of vectors that will be drawn
 
-  //std::vector<ci::mat4> matrices_;
-  ci::gl::Texture2dRef texture;
+  /**
+  * Performs an actions depending on which button is clicked
+  * Drawing vector field, clearing vector field, etc
+  * @param id - indicates which button is being pressed
+  */
+  void button(size_t id);
 
-  //ci::glm::vec2 mPosition;
   ci::params::InterfaceGlRef mParams; // Used for user input
 
-  std::string i_component_; // Representation of i-component of the vector field that user provided
-  std::string j_component_; // Representation of j-component of the vector field that user provided
+  string i_component_; // Representation of i-component of the vector field that user provided
+  string j_component_; // Representation of j-component of the vector field that user provided
 
-  exprtk::symbol_table<double> symbol_table_; // Used for Math expression parsing --> holds diff types of variable, constants, etc
-  exprtk::expression<double> i_expr_; // Expression that user provided
-  exprtk::expression<double> j_expr_; // Expression that user provided
-  exprtk::parser<double>
-      parser_; // Parses string version of expression into exprtk library math expression
-                                 // so that the library can evaluate the fucntion at different points
-  std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
   glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
   double x_unit_; // Amount of pixels that a single x unit is
   double y_unit_; // Amount of pixels that a single y unit is
+
   ParticleManager particle_manager_; // Draws and updates all particles on screen
+  FunctionHandler function_handler_; // Computes all math involved
+  std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
 
 };
 

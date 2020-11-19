@@ -70,7 +70,7 @@ list(APPEND TEST_FILES)
 ci_make_app(
         APP_NAME        vector-field-grapher
         CINDER_PATH     ${CINDER_PATH}
-        SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES} include/exprtk.hpp include/core/particle.h src/core/particle.cc include/visualizer/particle_manager.h src/visualizer/particle_manager.cc
+        SOURCES         apps/cinder_app_main.cc ${SOURCE_FILES} include/exprtk.hpp include/core/particle.h src/core/particle.cc include/visualizer/particle_manager.h src/visualizer/particle_manager.cc src/core/function_handler.cc include/core/function_handler.h
         INCLUDES        include
 )
 
