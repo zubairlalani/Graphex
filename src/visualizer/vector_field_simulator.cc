@@ -15,15 +15,20 @@ void FieldSimulator::setup() {
       getWindow(), "App parameters",
       getWindow()->toPixels( ci::ivec2( 300, 200 ) )
   );
-  mParams->setPosition(glm::vec2(50, 500));
 
+  mParams->addSeparator("Field Params", "Separate");
+  mParams->setPosition(glm::vec2(50, 500));
   mParams->addButton("Draw", [ & ]() { button( 0 ); });
   mParams->addButton("Clear", [ & ]() { button( 1 ); });
+  mParams->addParam( "Function i-Comp", &i_component_ );
+  mParams->addParam( "Function j-Comp", &j_component_ );
+
+  mParams->addSeparator("Particle Params", "Particle Params");
   mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
   mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
 
-  mParams->addParam( "Function i-Comp", &i_component_ );
-  mParams->addParam( "Function j-Comp", &j_component_ );
+  mParams->addSeparator("Arrow Params", "Arrow Params");
+  mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
 
   origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2); //- kInputBoxHeight
   std::cout << "ORIGIN: " << origin_ << std::endl;
@@ -69,10 +74,9 @@ void FieldSimulator::draw() {
     /*
     ci::gl::drawSolidCircle(glm::vec2(origin_.x + x_unit_ *element.first.first,
                                       origin_.y + y_unit_ *element.first.second), 5);*/
-
-    glm::vec3 start(origin_.x + x_unit_ *element.first.first, origin_.y + y_unit_ *element.first.second, 0);
-    glm::vec3 end(origin_.x + x_unit_ *element.first.first + x_unit_ * element.second.x,
-                  origin_.y + y_unit_ *element.first.second + y_unit_*element.second.y,
+    glm::vec3 start(origin_.x + x_unit_ *element.first.first, origin_.y + y_unit_ * element.first.second, 0);
+    glm::vec3 end(origin_.x + x_unit_ *element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
+                  origin_.y + y_unit_ *element.first.second + y_unit_* image_scaling_factor_ * element.second.y,
                   0);
 
     ci::gl::drawVector(start, end, 12.0f, 6.0f);
@@ -104,10 +108,11 @@ void FieldSimulator::button(size_t id) {
 
     for(int x=-kVectorScale; x <= kVectorScale; x++) {
       for(int y=-kVectorScale; y <= kVectorScale; y++) {
-        double valx = (double)x;
-        double valy = (double)y;
+          double valx = (double)x;
+          double valy = (double)y;
 
-        field_vectors_[{x, y}] = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
+          field_vectors_[{x, y}] = function_handler_.EvaluateFunction(
+              i_component_, j_component_, valx, valy);
       }
     }
 

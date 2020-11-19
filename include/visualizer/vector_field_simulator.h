@@ -56,6 +56,7 @@ class FieldSimulator : public ci::app::App {
   const int kScale = 10; // Determines how many units an axis is broken up into
   const int kVectorScale = 10; // Number of vectors that will be drawn
 
+  float image_scaling_factor_ = .1f; // Relative size of the arrows
   /**
   * Performs an actions depending on which button is clicked
   * Drawing vector field, clearing vector field, etc
