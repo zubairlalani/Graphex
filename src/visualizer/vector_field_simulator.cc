@@ -96,7 +96,7 @@ void FieldSimulator::draw() {
 }
 
 void FieldSimulator::update() {
-  particle_manager_.UpdateParticles();
+  particle_manager_.UpdateParticles(i_component_, j_component_);
 }
 
 void FieldSimulator::button(size_t id) {
@@ -107,15 +107,14 @@ void FieldSimulator::button(size_t id) {
         double valx = (double)x;
         double valy = (double)y;
 
-        field_vectors_[{x, y}]
-            = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
+        field_vectors_[{x, y}] = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
       }
     }
 
   } else if(id == 1) {
     field_vectors_.clear();
   } else if(id == 2) {
-    particle_manager_.AddParticle(5, glm::vec2(60, 60));
+    particle_manager_.AddParticle(5);
   } else if(id == 3) {
     particle_manager_.ClearParticles();
   }

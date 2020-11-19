@@ -7,13 +7,21 @@
 namespace vectorfield {
 
 using glm::vec2;
+using std::string;
 
 class FunctionHandler {
  public:
-  vec2 EvaluateFunction(const std::string& i_component, const std::string& j_component,
-                        double x_val, double y_val);
+  vec2 EvaluateFunction(const string& i_comp, const string& j_comp, double x_val, double y_val);
+
+  /*
+  void SetFieldComponents(const string&  i_comp, const string& j_comp);
+
+  string GetIComponent() const;
+
+  string GetJComponent() const;*/
 
  private:
+
   exprtk::symbol_table<double> symbol_table_; // Used for Math expression parsing --> holds diff types of variable, constants, etc
   exprtk::expression<double> i_expr_; // Expression that user provided
   exprtk::expression<double> j_expr_; // Expression that user provided

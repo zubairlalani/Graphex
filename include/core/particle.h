@@ -15,7 +15,7 @@ class Particle {
    * Initializes particle object with the specified radius
    * @param radius - radius of the particle
    */
-  Particle(size_t radius, const glm::vec2& position);
+  Particle(size_t radius);
 
   /**
    * Updates position based on the velocity_ of the Particle
@@ -27,7 +27,9 @@ class Particle {
    * Gets the x and y coordinates of the particle in the form of vec2
    * @return 2d (math) vector representing x and y coordinates of particle
    */
-  glm::vec2 GetPosition() const;
+  double GetXPosition() const;
+
+  double GetYPosition() const;
 
   /**
    * Get x and y components of velocity_ as a vec2
@@ -56,7 +58,7 @@ class Particle {
 
  private:
   glm::vec2 position_ =
-      glm::vec2(60, 60);  // Keeps track of x and y coordinates
+      glm::vec2(400, 380);  // Keeps track of x and y coordinates
   glm::vec2 velocity_;    // Keeps track of x and y components of velocity_
   size_t radius_;         // radius of a single circular particle
 

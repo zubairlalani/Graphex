@@ -1,9 +1,8 @@
 #include "core/particle.h"
 
 namespace vectorfield {
-Particle::Particle(size_t radius, const glm::vec2& position) {
+Particle::Particle(size_t radius) {
   radius_ = radius;
-  position_ = position;
 }
 
 void Particle::SetVelocity(const glm::vec2 &vel) {
@@ -11,6 +10,9 @@ void Particle::SetVelocity(const glm::vec2 &vel) {
 }
 
 void Particle::UpdatePosition() {
+  std::cout <<  "POSITION : " << position_ << std::endl;
+  std::cout <<  "VELOCITY : " << velocity_ << std::endl;
+
   position_ += velocity_;
 }
 
@@ -22,7 +24,11 @@ glm::vec2 Particle::GetVelocity() const {
   return velocity_;
 }
 
-glm::vec2 Particle::GetPosition() const {
-  return position_;
+double Particle::GetXPosition() const {
+  return position_.x;
+}
+
+double Particle::GetYPosition() const {
+  return position_.y;
 }
 }

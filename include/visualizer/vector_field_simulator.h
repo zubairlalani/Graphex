@@ -73,9 +73,9 @@ class FieldSimulator : public ci::app::App {
   double y_unit_; // Amount of pixels that a single y unit is
 
   ParticleManager particle_manager_; // Draws and updates all particles on screen
-  FunctionHandler function_handler_; // Computes all math involved
   std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
 
+  FunctionHandler function_handler_; // Computes all math involved
 };
 
 } // namespace visualizer
