@@ -2,7 +2,7 @@
 #define VECTOR_FIELD_GRAPHER_FUNCTION_HANDLER_H
 
 #include <exprtk.hpp>
-#include <glm/glm.hpp>
+#include "cinder/gl/gl.h"
 
 namespace vectorfield {
 

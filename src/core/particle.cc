@@ -10,10 +10,9 @@ void Particle::SetVelocity(const glm::vec2 &vel) {
 }
 
 void Particle::UpdatePosition() {
-  std::cout <<  "POSITION : " << position_ << std::endl;
-  std::cout <<  "VELOCITY : " << velocity_ << std::endl;
 
-  position_ += velocity_;
+  position_.x += velocity_.x;
+  position_.y -= velocity_.y; // coordinates on screen are opposite for y
 }
 
 size_t Particle::GetRadius() const {

@@ -28,8 +28,9 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
   for(Particle& particle : particles_) {
     //TODO: remove magic numbers
     double x_val = (particle.GetXPosition() - 350)/30;
-    double y_val = (particle.GetYPosition() - 350)/30; //Dist from origin then divide by the unit scale
-    particle.SetVelocity(function_handler_.EvaluateFunction(i_comp, j_comp, x_val, y_val));
+    double y_val = -1*(particle.GetYPosition() - 350)/30; //Dist from origin then divide by the unit scale
+    vec2 new_velocity = function_handler_.EvaluateFunction(i_comp, j_comp, x_val, y_val);
+    particle.SetVelocity(new_velocity);
     particle.UpdatePosition();
   }
 }

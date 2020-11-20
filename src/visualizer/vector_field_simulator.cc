@@ -30,7 +30,7 @@ void FieldSimulator::setup() {
   mParams->addSeparator("Arrow Params");
   mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
 
-  origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2); //- kInputBoxHeight
+  origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2);
   std::cout << "ORIGIN: " << origin_ << std::endl;
 
   x_unit_ = static_cast<double>(kWindowSize - 2*kGraphMargin)/(2*kScale);
@@ -65,14 +65,15 @@ void FieldSimulator::draw() {
   ci::gl::drawLine(vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
                    vec2(kWindowSize-kGraphMargin, (kWindowSize)/2));
 
+  ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", vec2(kWindowSize/2 - 30, 25));
   auto it = field_vectors_.begin();
 
   for (auto const& element : field_vectors_) {
 
     //TODO: Fix performance issues with drawing particle while drawing Field
-    glm::vec2 start(origin_.x + x_unit_ *element.first.first, origin_.y + y_unit_ * element.first.second);
+    glm::vec2 start(origin_.x + x_unit_ *element.first.first, origin_.y - y_unit_ * element.first.second);
     glm::vec2 end(origin_.x + x_unit_ *element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
-                  origin_.y + y_unit_ *element.first.second + y_unit_* image_scaling_factor_ * element.second.y);
+                  origin_.y - y_unit_ *element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
 
 
     vec2 direction_vec(end.x - start.x, end.y - start.y);
@@ -90,6 +91,7 @@ void FieldSimulator::draw() {
     ci::gl::drawLine(start, end);
     ci::gl::drawLine(end, arrow_point_one);
     ci::gl::drawLine(end, arrow_point_two);
+
   }
 
   particle_manager_.DrawParticles();
