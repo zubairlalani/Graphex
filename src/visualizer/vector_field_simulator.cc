@@ -10,11 +10,6 @@ FieldSimulator::FieldSimulator() {
 }
 
 void FieldSimulator::setup() {
-  //mPosition = getWindowCenter();
-  /*
-  auto img = loadImage( loadAsset( "vector.png" ) );
-  auto im2 = loadAsset("vector.png");
-  texture = ci::gl::Texture2d::create(img);*/
 
   mParams = ci::params::InterfaceGl::create(
       getWindow(), "App parameters",
@@ -34,6 +29,7 @@ void FieldSimulator::setup() {
   x_unit_ = static_cast<double>(kWindowSize - 2*kGraphMargin)/(2*kScale);
   y_unit_ = x_unit_;
   std::cout << x_unit_ << std::endl;
+
   /*
   Experimenting with integration/derivatives:
 
