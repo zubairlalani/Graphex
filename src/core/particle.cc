@@ -1,8 +1,9 @@
 #include "core/particle.h"
 
 namespace vectorfield {
-Particle::Particle(size_t radius) {
+Particle::Particle(size_t radius, const glm::vec2& pos) {
   radius_ = radius;
+  position_ = pos;
 }
 
 void Particle::SetVelocity(const glm::vec2 &vel) {

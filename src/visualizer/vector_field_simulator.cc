@@ -23,6 +23,9 @@ void FieldSimulator::setup() {
   mParams->addParam( "Function i-Comp", &i_component_ );
   mParams->addParam( "Function j-Comp", &j_component_ );
 
+  mParams->addParam("X Position", &x_pos_);
+  mParams->addParam("Y Position", &y_pos_);
+
   mParams->addSeparator("Particle Params");
   mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
   mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
@@ -71,10 +74,9 @@ void FieldSimulator::draw() {
   for (auto const& element : field_vectors_) {
 
     //TODO: Fix performance issues with drawing particle while drawing Field
-    glm::vec2 start(origin_.x + x_unit_ *element.first.first, origin_.y - y_unit_ * element.first.second);
-    glm::vec2 end(origin_.x + x_unit_ *element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
-                  origin_.y - y_unit_ *element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
-
+    glm::vec2 start(origin_.x + x_unit_ * element.first.first, origin_.y - y_unit_ * element.first.second);
+    glm::vec2 end(origin_.x + x_unit_ * element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
+                  origin_.y - y_unit_ * element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
 
     vec2 direction_vec(end.x - start.x, end.y - start.y);
 
@@ -91,10 +93,13 @@ void FieldSimulator::draw() {
     ci::gl::drawLine(start, end);
     ci::gl::drawLine(end, arrow_point_one);
     ci::gl::drawLine(end, arrow_point_two);
-
   }
 
   particle_manager_.DrawParticles();
+
+  if(left_down_ && in_range_) {
+    particle_manager_.DrawMouseParticle(mouse_pos_);
+  }
 
 }
 
@@ -114,14 +119,41 @@ void FieldSimulator::button(size_t id) {
               i_component_, j_component_, valx, valy);
       }
     }
-
   } else if(id == 1) {
     field_vectors_.clear();
   } else if(id == 2) {
-    particle_manager_.AddParticle(5);
+    particle_manager_.AddParticle(5,
+                                  glm::vec2(std::stod(x_pos_),
+                                            std::stod(y_pos_)));
   } else if(id == 3) {
     particle_manager_.ClearParticles();
   }
 }
+
+void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
+  if(event.isLeftDown()) {
+    mouse_pos_ = event.getPos();
+    left_down_ = true;
+  }
+}
+
+void FieldSimulator::mouseUp(ci::app::MouseEvent event) {
+  if(left_down_ && in_range_) {
+    particle_manager_.AddParticle(5, event.getPos());
+  }
+  left_down_ = false;
+  in_range_ = false;
+}
+
+void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
+  vec2 dist = vec2(event.getPos().x - particle_manager_.GetParticleShopPos().x,
+                   event.getPos().y - particle_manager_.GetParticleShopPos().y);
+  double length = glm::length(dist);
+  std::cout << length << std::endl;
+  if(length < 10) {
+    in_range_ = true;
+  }
+}
+
 } // namespace visualizer
 } // namespace vectorfield

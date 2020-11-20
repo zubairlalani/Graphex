@@ -48,6 +48,12 @@ class FieldSimulator : public ci::app::App {
    */
   void setup() override;
 
+  void mouseDrag(ci::app::MouseEvent event) override;
+
+  void mouseUp(ci::app::MouseEvent event) override;
+
+  void mouseDown(ci::app::MouseEvent event) override;
+
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
@@ -70,6 +76,8 @@ class FieldSimulator : public ci::app::App {
 
   string i_component_; // Representation of i-component of the vector field that user provided
   string j_component_; // Representation of j-component of the vector field that user provided
+  string x_pos_;
+  string y_pos_;
 
   glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
   double x_unit_; // Amount of pixels that a single x unit is
@@ -79,6 +87,10 @@ class FieldSimulator : public ci::app::App {
   std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
 
   FunctionHandler function_handler_; // Computes all math involved
+
+  glm::vec2 mouse_pos_;
+  bool left_down_;
+  bool in_range_;
 };
 
 } // namespace visualizer

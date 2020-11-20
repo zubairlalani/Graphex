@@ -16,13 +16,17 @@ class ParticleManager {
 
   void UpdateParticles(const string& i_comp, const string& j_comp);
 
-  void AddParticle(size_t radius);
+  void AddParticle(size_t radius, const vec2& pos);
 
   void ClearParticles();
 
+  void DrawMouseParticle(const vec2& pos);
+
+  vec2 GetParticleShopPos() const;
 
  private:
 
+  const vec2 kParticleShopPos = vec2(500, 600);
   std::vector<Particle> particles_;
   FunctionHandler function_handler_;
 
