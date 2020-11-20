@@ -26,11 +26,10 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
 
   //Calculate each particles velocity based on its current position
   for(Particle& particle : particles_) {
+    //TODO: remove magic numbers
     double x_val = (particle.GetXPosition() - 350)/30;
     double y_val = (particle.GetYPosition() - 350)/30; //Dist from origin then divide by the unit scale
-    std::cout << function_handler_.EvaluateFunction(i_comp, j_comp, x_val, y_val) << std::endl;
     particle.SetVelocity(function_handler_.EvaluateFunction(i_comp, j_comp, x_val, y_val));
-    //particle.SetVelocity(vec2(2, 1));
     particle.UpdatePosition();
   }
 }

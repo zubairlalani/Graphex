@@ -53,8 +53,10 @@ class FieldSimulator : public ci::app::App {
   const size_t kWindowSize = 700; // Size of the cinder window
   const size_t kGraphMargin = 50; // Dist from sides of window that graph axes are drawn
   //const size_t kInputBoxHeight = 100;
-  const int kScale = 10; // Determines how many units an axis is broken up into
+  const int kScale = 10; // Determines how many units an axis goes up to
   const int kVectorScale = 10; // Number of vectors that will be drawn
+  const float kArrowHeight = 3.0f; // Height of arrowhead
+  const float kArrowBase = 10.0f; // Distance that the base of the arrow spans
 
   float image_scaling_factor_ = .1f; // Relative size of the arrows
   /**

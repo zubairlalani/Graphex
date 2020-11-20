@@ -13,12 +13,6 @@ class FunctionHandler {
  public:
   vec2 EvaluateFunction(const string& i_comp, const string& j_comp, double x_val, double y_val);
 
-  /*
-  void SetFieldComponents(const string&  i_comp, const string& j_comp);
-
-  string GetIComponent() const;
-
-  string GetJComponent() const;*/
 
  private:
 

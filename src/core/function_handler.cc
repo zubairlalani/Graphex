@@ -17,19 +17,5 @@ vec2 FunctionHandler::EvaluateFunction(const string& i_component, const string& 
   return vec2(i_expr_.value(), -1*j_expr_.value()); // y-coordinate of cinder is opposite of graph y direction
   //field_vectors_[{x, y}] = glm::vec2(i_expr_.value(), j_expr_.value());
 }
-/*
-void FunctionHandler::SetFieldComponents(const string& i_comp, const string& j_comp) {
-  //TODO: Make a Field class instead later
-  i_component_ = i_comp;
-  j_component_ = j_comp;
-}
-
-string FunctionHandler::GetIComponent() const {
-  return i_component_;
-}
-
-string FunctionHandler::GetJComponent() const {
-  return j_component_;
-}*/
 
 }
