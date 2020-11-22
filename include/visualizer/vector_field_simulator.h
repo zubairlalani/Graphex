@@ -67,14 +67,28 @@ class FieldSimulator : public ci::app::App {
   const int kVectorScale = 10; // Number of vectors that will be drawn
   const float kArrowHeight = 3.0f; // Height of arrowhead
   const float kArrowBase = 10.0f; // Distance that the base of the arrow spans
-
-  float image_scaling_factor_ = .1f; // Relative size of the arrows
   /**
   * Performs an actions depending on which button is clicked
   * Drawing vector field, clearing vector field, etc
   * @param id - indicates which button is being pressed
   */
   void button(size_t id);
+
+  void ClearArrows();
+
+  void InitializeArrowVertices(int x, int y, const glm::vec2& velocity);
+
+  void DrawGraphAxes();
+
+  void DrawFPS();
+
+  void InitializeFieldVectors();
+
+  void SetupTweakBar();
+
+  void CreateCoordinateSystem();
+
+  void InitializeBatch();
 
   ci::params::InterfaceGlRef mParams; // Used for user input
 
@@ -89,25 +103,13 @@ class FieldSimulator : public ci::app::App {
 
   ParticleManager particle_manager_; // Draws and updates all particles on screen
   std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
+  float image_scaling_factor_ = .1f; // Relative size of the arrows
 
   FunctionHandler function_handler_; // Computes all math involved
 
   glm::vec2 mouse_pos_;
   bool left_down_;
   bool in_range_;
-
-  //ci::gl::VboMeshRef mesh;
-  //ci::gl::BatchRef mBatch;
-  //std::vector< glm::vec2 > vertices;
-  //std::vector<size_t> indices;
-  //ci::gl::VboMesh::Layout layout;
-
-  std::vector<ci::vec4> mInstanceData;
-  size_t                mInstanceCount;
-  ci::gl::GlslProgRef       mGlslProg;
-  ci::gl::VboRef            mInstanceVbo;
-  ci::gl::VboMeshRef        mVboMesh;
-  ci::gl::BatchRef          mBatch;
 
   ci::gl::GlslProgRef       mGlslProg2;
   ci::gl::BatchRef          mBatch2;

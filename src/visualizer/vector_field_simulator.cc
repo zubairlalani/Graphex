@@ -11,34 +11,7 @@ FieldSimulator::FieldSimulator() {
 
 void FieldSimulator::setup() {
 
-  mParams = ci::params::InterfaceGl::create(
-      getWindow(), "App parameters",
-      getWindow()->toPixels( ci::ivec2( 300, 200 ) )
-  );
-
-  mParams->addSeparator("Field Params");
-  mParams->setPosition(glm::vec2(50, 500));
-  mParams->addButton("Draw", [ & ]() { button( 0 ); });
-  mParams->addButton("Clear", [ & ]() { button( 1 ); });
-  mParams->addParam( "Function i-Comp", &i_component_ );
-  mParams->addParam( "Function j-Comp", &j_component_ );
-
-  mParams->addParam("X Position", &x_pos_);
-  mParams->addParam("Y Position", &y_pos_);
-
-  mParams->addSeparator("Particle Params");
-  mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
-  mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
-
-  mParams->addSeparator("Arrow Params");
-  mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
-
-  origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2);
-  std::cout << "ORIGIN: " << origin_ << std::endl;
-
-  x_unit_ = static_cast<double>(kWindowSize - 2*kGraphMargin)/(2*kScale);
-  y_unit_ = x_unit_;
-  std::cout << x_unit_ << std::endl;
+  SetupTweakBar();
 
   /*
   Experimenting with integration/derivatives:
@@ -54,41 +27,31 @@ void FieldSimulator::setup() {
   std::cout << "AREA: " << area << std::endl;
   std::cout << "SLOPE: " << derivation << std::endl;*/
 
-  vertBatch = ci::gl::VertBatch::create(GL_LINES);
-  mGlslProg2 = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
-  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+  CreateCoordinateSystem();
+
+  InitializeBatch();
+
+  // Default value is the origin if Add particle is clicked
+  // but no x position or y position is specified
+  std::ostringstream strx, stry;
+  strx << origin_.x;
+  stry << origin_.y;
+  x_pos_ = strx.str();
+  y_pos_ = stry.str();
 }
 
 void FieldSimulator::draw() {
 
-  ci::gl::clear(ci::Color(0, 0, 0), true);
+  ci::gl::clear(ci::Color(ci::Color::black()), true);
 
-  ci::gl::color(250, 250, 250);
-  mBatch2->draw();
-
-  // Render FPS
-  ci::gl::ScopedColor      scpColor( 0, 0, 0, 0.8f );
-  ci::gl::ScopedBlendAlpha scpBlend;
-  ci::gl::drawSolidRect( ci::Rectf( 0, 0, getWindowWidth(), 40 ) );
-
-  std::stringstream strFps;
-  strFps << int( getAverageFps() ) << " FPS";
-  ci::gl::drawString( strFps.str(), vec2( 10, 10 ), ci::Color( 1, 1, 0 ) );
-
+  DrawFPS();
+  DrawGraphAxes();
   mParams->draw();
-  ci::gl::color(255, 255, 255);
-
-  //mBatch->draw();
-
-  ci::gl::drawLine(vec2(kWindowSize/2, kGraphMargin),
-                   vec2(kWindowSize/2, kWindowSize - kGraphMargin ));
-  ci::gl::drawLine(vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
-                   vec2(kWindowSize-kGraphMargin, (kWindowSize)/2));
-
-  ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", vec2(kWindowSize/2 - 30, 25));
+  mBatch2->draw();
+  ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", //Draw User Inputted Functions
+                     vec2(kWindowSize/2 - 30, 25));
 
   particle_manager_.DrawParticles();
-
   if(left_down_ && in_range_) {
     particle_manager_.DrawMouseParticle(mouse_pos_);
   }
@@ -100,55 +63,17 @@ void FieldSimulator::update() {
 }
 
 void FieldSimulator::button(size_t id) {
-  if(id == 0) {
-
-    for(int x=-kVectorScale; x <= kVectorScale; x++) {
-      for(int y=-kVectorScale; y <= kVectorScale; y++) {
-        double valx = (double) x;
-        double valy = (double) y;
-        auto velocity = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
-        field_vectors_[{x, y}] = velocity;
-      }
-    }
-
+  if(id == 0) { // Draw Field Button
     vertBatch->clear();
     vertBatch = ci::gl::VertBatch::create(GL_LINES);
-
-    for (auto const& element : field_vectors_) {
-      glm::vec2 start(origin_.x + x_unit_ * element.first.first, origin_.y - y_unit_ * element.first.second);
-      glm::vec2 end(origin_.x + x_unit_ * element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
-                    origin_.y - y_unit_ * element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
-      vec2 direction_vec(end.x - start.x, end.y - start.y);
-
-      //Make the direction vector a unit vector
-      direction_vec /= sqrt((direction_vec.x * direction_vec.x)
-                            + (direction_vec.y * direction_vec.y));
-
-      //Create a vector that is the direction vector rotated 90 degrees to form a basis
-      vec2 basis_vec(direction_vec.y, -1* direction_vec.x);
-
-      vec2 arrow_point_one = end - (kArrowHeight * direction_vec) - (-1*kArrowBase * basis_vec / 2.0f);
-      vec2 arrow_point_two = end - (kArrowHeight * direction_vec) - (kArrowBase * basis_vec / 2.0f);
-
-      vertBatch->vertex(start);
-      vertBatch->vertex(end);
-      vertBatch->vertex(end);
-      vertBatch->vertex(arrow_point_one);
-      vertBatch->vertex(end);
-      vertBatch->vertex(arrow_point_two);
-    }
-
+    InitializeFieldVectors();
     mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
-
-  } else if(id == 1) {
-    vertBatch->clear();
-    mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
-    field_vectors_.clear();
-  } else if(id == 2) {
+  } else if(id == 1) { // Clear Field Button
+    ClearArrows();
+  } else if(id == 2) { // Add Particle Button
     particle_manager_.AddParticle(5,
-                                  glm::vec2(std::stod(x_pos_),
-                                            std::stod(y_pos_)));
-  } else if(id == 3) {
+                                  glm::vec2(std::stod(x_pos_),std::stod(y_pos_)));
+  } else if(id == 3) { // Clear Particles Button
     particle_manager_.ClearParticles();
   }
 }
@@ -172,11 +97,103 @@ void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
   vec2 dist = vec2(event.getPos().x - particle_manager_.GetParticleShopPos().x,
                    event.getPos().y - particle_manager_.GetParticleShopPos().y);
   double length = glm::length(dist);
-  std::cout << length << std::endl;
   if(length < 10) {
     in_range_ = true;
   }
 }
 
+void FieldSimulator::ClearArrows() {
+  vertBatch->clear();
+  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+  field_vectors_.clear();
+}
+
+void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velocity) {
+  glm::vec2 start(origin_.x + x_unit_ * x, origin_.y - y_unit_ * y);
+  glm::vec2 end(origin_.x + x_unit_ * x + x_unit_ * image_scaling_factor_ * velocity.x,
+                origin_.y - y_unit_ * y - y_unit_* image_scaling_factor_ * velocity.y);
+  vec2 direction_vec(end.x - start.x, end.y - start.y);
+
+  //Make the direction vector a unit vector
+  direction_vec /= sqrt((direction_vec.x * direction_vec.x)
+                        + (direction_vec.y * direction_vec.y));
+
+  //Create a vector that is the direction vector rotated 90 degrees to form a basis
+  vec2 basis_vec(direction_vec.y, -1* direction_vec.x);
+
+  vec2 arrow_point_one = end - (kArrowHeight * direction_vec) - (-1*kArrowBase * basis_vec / 2.0f);
+  vec2 arrow_point_two = end - (kArrowHeight * direction_vec) - (kArrowBase * basis_vec / 2.0f);
+
+  vertBatch->vertex(start);
+  vertBatch->vertex(end);
+  vertBatch->vertex(end);
+  vertBatch->vertex(arrow_point_one);
+  vertBatch->vertex(end);
+  vertBatch->vertex(arrow_point_two);
+}
+
+void FieldSimulator::DrawFPS() {
+  // Render FPS
+  ci::gl::ScopedColor      scpColor( 0, 0, 0, 0.8f );
+  ci::gl::ScopedBlendAlpha scpBlend;
+  ci::gl::drawSolidRect( ci::Rectf( 0, 0, getWindowWidth(), 40 ) );
+  std::stringstream strFps;
+  strFps << int( getAverageFps() ) << " FPS";
+  ci::gl::drawString( strFps.str(), vec2( 10, 10 ), ci::Color( 1, 1, 0 ) );
+}
+
+void FieldSimulator::DrawGraphAxes() {
+  ci::gl::color(ci::Color::white());
+  ci::gl::drawLine(vec2(kWindowSize/2, kGraphMargin),
+                   vec2(kWindowSize/2, kWindowSize - kGraphMargin ));
+  ci::gl::drawLine(vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
+                   vec2(kWindowSize-kGraphMargin, (kWindowSize)/2));
+}
+
+void FieldSimulator::InitializeFieldVectors() {
+  for(int x=-kVectorScale; x <= kVectorScale; x++) {
+    for(int y=-kVectorScale; y <= kVectorScale; y++) {
+      double valx = (double) x;
+      double valy = (double) y;
+      auto velocity = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
+      field_vectors_[{x, y}] = velocity;
+      InitializeArrowVertices(x, y, velocity);
+    }
+  }
+}
+
+void FieldSimulator::SetupTweakBar() {
+  mParams = ci::params::InterfaceGl::create(
+      getWindow(), "App parameters",
+      getWindow()->toPixels( ci::ivec2( 300, 200 ) )
+  );
+
+  mParams->addSeparator("Field Params");
+  mParams->setPosition(glm::vec2(50, 500));
+  mParams->addButton("Draw", [ & ]() { button( 0 ); });
+  mParams->addButton("Clear", [ & ]() { button( 1 ); });
+  mParams->addParam( "Function i-Comp", &i_component_ );
+  mParams->addParam( "Function j-Comp", &j_component_ );
+  mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
+
+  mParams->addSeparator("Particle Params");
+  mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
+  mParams->addParam("X Position", &x_pos_);
+  mParams->addParam("Y Position", &y_pos_);
+  mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
+}
+
+void FieldSimulator::CreateCoordinateSystem() {
+  origin_ = glm::vec2(kWindowSize/2, (kWindowSize)/2); // origin of graph in screen coordinates
+  x_unit_ = static_cast<double>(kWindowSize - 2*kGraphMargin)/(2*kScale); // Calculate how many screen pixels a single x unit is
+  y_unit_ = x_unit_;
+}
+
+void FieldSimulator::InitializeBatch() {
+  //Used to draw all the arrows with on draw call
+  vertBatch = ci::gl::VertBatch::create(GL_LINES);
+  mGlslProg2 = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
+  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+}
 } // namespace visualizer
 } // namespace vectorfield
