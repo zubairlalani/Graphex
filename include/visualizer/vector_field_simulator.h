@@ -4,18 +4,15 @@
 #include <cmath>
 
 #include "../core/function_handler.h"
-
 #include "cinder/ImageIo.h"
+#include "cinder/Rand.h"
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
+#include "cinder/gl/Vbo.h"
 #include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
-#include "cinder/gl/Vbo.h"
-#include "cinder/Rand.h"
-
-
+#import "curve_handler.h"
 #include "particle_manager.h"
-
 
 namespace vectorfield {
 
@@ -67,6 +64,13 @@ class FieldSimulator : public ci::app::App {
   const int kVectorScale = 10; // Number of vectors that will be drawn
   const float kArrowHeight = 3.0f; // Height of arrowhead
   const float kArrowBase = 10.0f; // Distance that the base of the arrow spans
+  const std::vector<ci::Color> kPenColors = {
+      ci::Color("red"),
+      ci::Color("green"),
+      ci::Color("blue"),
+      ci::Color("white")
+  };
+
   /**
   * Performs an actions depending on which button is clicked
   * Drawing vector field, clearing vector field, etc
@@ -90,6 +94,9 @@ class FieldSimulator : public ci::app::App {
 
   void InitializeBatch();
 
+  ci::Color GetNextColor();
+
+  size_t color_index_ = 0;
   ci::params::InterfaceGlRef mParams; // Used for user input
 
   string i_component_; // Representation of i-component of the vector field that user provided
@@ -115,6 +122,8 @@ class FieldSimulator : public ci::app::App {
   ci::gl::BatchRef          mBatch2;
   ci::gl::VertBatchRef      vertBatch;
 
+  CurveHandler curve_handler_;
+  bool pen_mode_ = false;
 };
 
 } // namespace visualizer

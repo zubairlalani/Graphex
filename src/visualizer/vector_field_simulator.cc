@@ -5,7 +5,7 @@ namespace vectorfield {
 
 namespace visualizer {
 
-FieldSimulator::FieldSimulator() {
+FieldSimulator::FieldSimulator() : curve_handler_(ci::Color::white()) {
   ci::app::setWindowSize(kWindowSize, kWindowSize);
 }
 
@@ -43,6 +43,9 @@ void FieldSimulator::setup() {
 void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(ci::Color::black()), true);
+  if(pen_mode_) {
+    curve_handler_.Render();
+  }
 
   DrawFPS();
   DrawGraphAxes();
@@ -75,10 +78,28 @@ void FieldSimulator::button(size_t id) {
                                   glm::vec2(std::stod(x_pos_),std::stod(y_pos_)));
   } else if(id == 3) { // Clear Particles Button
     particle_manager_.ClearParticles();
+  } else if(id == 4) { // Enter Pen Mode
+    pen_mode_ = true;
+  } else if(id == 5) { // Exit Pen Mode
+    pen_mode_ = false;
+    curve_handler_.Clear();
+  } else if(id == 6) { // Erase
+    curve_handler_.Clear();
+  } else if(id == 7) { // Change Pen Color
+    curve_handler_.ChangeColor(GetNextColor());
   }
 }
 
+ci::Color FieldSimulator::GetNextColor() {
+  color_index_ = (color_index_ + 1) % kPenColors.size();
+  return kPenColors[color_index_];
+}
+
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
+  if(pen_mode_) {
+    curve_handler_.ApplyStroke(event.getPos());
+  }
+
   if(event.isLeftDown()) {
     mouse_pos_ = event.getPos();
     left_down_ = true;
@@ -94,6 +115,10 @@ void FieldSimulator::mouseUp(ci::app::MouseEvent event) {
 }
 
 void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
+  if(pen_mode_) {
+    curve_handler_.CreateStroke();
+  }
+
   vec2 dist = vec2(event.getPos().x - particle_manager_.GetParticleShopPos().x,
                    event.getPos().y - particle_manager_.GetParticleShopPos().y);
   double length = glm::length(dist);
@@ -181,6 +206,12 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addParam("X Position", &x_pos_);
   mParams->addParam("Y Position", &y_pos_);
   mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
+
+  mParams->addSeparator("Canvas");
+  mParams->addButton("Enter Pen Mode", [ & ]() { button( 4 ); });
+  mParams->addButton("Exit Pen Mode", [ & ]() { button( 5 ); });
+  mParams->addButton("Erase", [ & ]() { button( 6 ); });
+  mParams->addButton("Change Pen Color", [ & ]() { button( 7 ); });
 }
 
 void FieldSimulator::CreateCoordinateSystem() {
