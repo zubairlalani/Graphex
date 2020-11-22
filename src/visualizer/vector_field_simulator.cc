@@ -54,14 +54,31 @@ void FieldSimulator::setup() {
   std::cout << "AREA: " << area << std::endl;
   std::cout << "SLOPE: " << derivation << std::endl;*/
 
+  vertBatch = ci::gl::VertBatch::create(GL_LINES);
+  mGlslProg2 = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
+  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
 }
 
 void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(0, 0, 0), true);
 
+  ci::gl::color(250, 250, 250);
+  mBatch2->draw();
+
+  // Render FPS
+  ci::gl::ScopedColor      scpColor( 0, 0, 0, 0.8f );
+  ci::gl::ScopedBlendAlpha scpBlend;
+  ci::gl::drawSolidRect( ci::Rectf( 0, 0, getWindowWidth(), 40 ) );
+
+  std::stringstream strFps;
+  strFps << int( getAverageFps() ) << " FPS";
+  ci::gl::drawString( strFps.str(), vec2( 10, 10 ), ci::Color( 1, 1, 0 ) );
+
   mParams->draw();
   ci::gl::color(255, 255, 255);
+
+  //mBatch->draw();
 
   ci::gl::drawLine(vec2(kWindowSize/2, kGraphMargin),
                    vec2(kWindowSize/2, kWindowSize - kGraphMargin ));
@@ -69,31 +86,6 @@ void FieldSimulator::draw() {
                    vec2(kWindowSize-kGraphMargin, (kWindowSize)/2));
 
   ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", vec2(kWindowSize/2 - 30, 25));
-  auto it = field_vectors_.begin();
-
-  for (auto const& element : field_vectors_) {
-
-    //TODO: Fix performance issues with drawing particle while drawing Field
-    glm::vec2 start(origin_.x + x_unit_ * element.first.first, origin_.y - y_unit_ * element.first.second);
-    glm::vec2 end(origin_.x + x_unit_ * element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
-                  origin_.y - y_unit_ * element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
-
-    vec2 direction_vec(end.x - start.x, end.y - start.y);
-
-    //Make the direction vector a unit vector
-    direction_vec /= sqrt((direction_vec.x * direction_vec.x)
-                          + (direction_vec.y * direction_vec.y));
-
-    //Create a vector that is the direction vector rotated 90 degrees to form a basis
-    vec2 basis_vec(direction_vec.y, -1* direction_vec.x);
-
-    vec2 arrow_point_one = end - (kArrowHeight * direction_vec) - (-1*kArrowBase * basis_vec / 2.0f);
-    vec2 arrow_point_two = end - (kArrowHeight * direction_vec) - (kArrowBase * basis_vec / 2.0f);
-
-    ci::gl::drawLine(start, end);
-    ci::gl::drawLine(end, arrow_point_one);
-    ci::gl::drawLine(end, arrow_point_two);
-  }
 
   particle_manager_.DrawParticles();
 
@@ -112,14 +104,45 @@ void FieldSimulator::button(size_t id) {
 
     for(int x=-kVectorScale; x <= kVectorScale; x++) {
       for(int y=-kVectorScale; y <= kVectorScale; y++) {
-          double valx = (double) x;
-          double valy = (double) y;
-
-          field_vectors_[{x, y}] = function_handler_.EvaluateFunction(
-              i_component_, j_component_, valx, valy);
+        double valx = (double) x;
+        double valy = (double) y;
+        auto velocity = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
+        field_vectors_[{x, y}] = velocity;
       }
     }
+
+    vertBatch->clear();
+    vertBatch = ci::gl::VertBatch::create(GL_LINES);
+
+    for (auto const& element : field_vectors_) {
+      glm::vec2 start(origin_.x + x_unit_ * element.first.first, origin_.y - y_unit_ * element.first.second);
+      glm::vec2 end(origin_.x + x_unit_ * element.first.first + x_unit_ * image_scaling_factor_ * element.second.x,
+                    origin_.y - y_unit_ * element.first.second - y_unit_* image_scaling_factor_ * element.second.y);
+      vec2 direction_vec(end.x - start.x, end.y - start.y);
+
+      //Make the direction vector a unit vector
+      direction_vec /= sqrt((direction_vec.x * direction_vec.x)
+                            + (direction_vec.y * direction_vec.y));
+
+      //Create a vector that is the direction vector rotated 90 degrees to form a basis
+      vec2 basis_vec(direction_vec.y, -1* direction_vec.x);
+
+      vec2 arrow_point_one = end - (kArrowHeight * direction_vec) - (-1*kArrowBase * basis_vec / 2.0f);
+      vec2 arrow_point_two = end - (kArrowHeight * direction_vec) - (kArrowBase * basis_vec / 2.0f);
+
+      vertBatch->vertex(start);
+      vertBatch->vertex(end);
+      vertBatch->vertex(end);
+      vertBatch->vertex(arrow_point_one);
+      vertBatch->vertex(end);
+      vertBatch->vertex(arrow_point_two);
+    }
+
+    mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+
   } else if(id == 1) {
+    vertBatch->clear();
+    mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
     field_vectors_.clear();
   } else if(id == 2) {
     particle_manager_.AddParticle(5,

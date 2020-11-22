@@ -10,6 +10,9 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/params/Params.h"
+#include "cinder/gl/Vbo.h"
+#include "cinder/Rand.h"
+
 
 #include "particle_manager.h"
 
@@ -19,6 +22,7 @@ namespace vectorfield {
 namespace visualizer {
 
 using std::string;
+using std::vector;
 
 class FieldSimulator : public ci::app::App {
  public:
@@ -91,6 +95,24 @@ class FieldSimulator : public ci::app::App {
   glm::vec2 mouse_pos_;
   bool left_down_;
   bool in_range_;
+
+  //ci::gl::VboMeshRef mesh;
+  //ci::gl::BatchRef mBatch;
+  //std::vector< glm::vec2 > vertices;
+  //std::vector<size_t> indices;
+  //ci::gl::VboMesh::Layout layout;
+
+  std::vector<ci::vec4> mInstanceData;
+  size_t                mInstanceCount;
+  ci::gl::GlslProgRef       mGlslProg;
+  ci::gl::VboRef            mInstanceVbo;
+  ci::gl::VboMeshRef        mVboMesh;
+  ci::gl::BatchRef          mBatch;
+
+  ci::gl::GlslProgRef       mGlslProg2;
+  ci::gl::BatchRef          mBatch2;
+  ci::gl::VertBatchRef      vertBatch;
+
 };
 
 } // namespace visualizer
