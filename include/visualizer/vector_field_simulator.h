@@ -97,6 +97,10 @@ class FieldSimulator : public ci::app::App {
 
   void InitializeBatch();
 
+  void DrawTikMarks();
+
+  void DrawArrow(const glm::vec2& start, const glm::vec2& end, float arrow_base, float arrow_height);
+
   ci::Color GetNextColor();
 
   size_t color_index_ = 0;
@@ -120,6 +124,10 @@ class FieldSimulator : public ci::app::App {
   glm::vec2 mouse_pos_;
   bool left_down_;
   bool in_range_;
+
+  ci::gl::GlslProgRef       mGlslProg;
+  ci::gl::BatchRef          mBatch;
+  ci::gl::VertBatchRef      tik_vert_batch;
 
   ci::gl::GlslProgRef       mGlslProg2;
   ci::gl::BatchRef          mBatch2;
