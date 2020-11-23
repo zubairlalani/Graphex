@@ -14,6 +14,7 @@
 #import "curve_handler.h"
 #include "particle_manager.h"
 
+
 namespace vectorfield {
 
 namespace visualizer {
@@ -128,6 +129,7 @@ class FieldSimulator : public ci::app::App {
   bool pen_mode_ = false;
 
   double total_work_;
+  double divergence_;
   //std::string equation;
 };
 

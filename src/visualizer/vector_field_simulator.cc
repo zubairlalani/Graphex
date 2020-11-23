@@ -13,19 +13,13 @@ void FieldSimulator::setup() {
 
   SetupTweakBar();
 
+  //Experimenting with integration/derivatives:
   /*
-  Experimenting with integration/derivatives:
-
-  const std::string integrate_expr = "x^3";
   double x;
   table.add_variable("x", x);
-  i_expr_.register_symbol_table(table);
-  parser.compile(integrate_expr, i_expr_);
-  double area = exprtk::integrate(i_expr_, x, -1.0, 1.0);
-  x = 12.0;
-  double derivation = exprtk::derivative(i_expr_, x);
-  std::cout << "AREA: " << area << std::endl;
-  std::cout << "SLOPE: " << derivation << std::endl;*/
+  expr.register_symbol_table(table);
+  parser.compile(integrate_expr, expr);
+  double area = exprtk::integrate(expr, x, -1.0, 1.0);*/
 
   CreateCoordinateSystem();
 
@@ -102,6 +96,9 @@ ci::Color FieldSimulator::GetNextColor() {
 
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
   mouse_pos_ = event.getPos();
+  double x_val = (mouse_pos_.x - origin_.x)/x_unit_;
+  double y_val = (origin_.y - mouse_pos_.y)/y_unit_;
+  divergence_ = function_handler_.EvaluateDivergence(i_component_, j_component_, x_val, y_val);
   if(pen_mode_) {
     curve_handler_.ApplyStroke(event.getPos());
   }
@@ -168,6 +165,21 @@ void FieldSimulator::DrawMouseCoordinates() {
   stry << mouse_pos_.y;
   ci::gl::drawString("Mouse Position: (" + strx.str() + ", " + stry.str() + ")",
                      vec2(10, 25), ci::Color(1, 1, 0));
+
+  std::ostringstream divstr;
+
+  divstr << divergence_;
+
+  ci::gl::drawString("Divergence: " + divstr.str(),
+                     vec2(10, 40), ci::Color(1, 1, 0));
+
+
+  std::ostringstream workstr;
+
+  workstr << total_work_;
+
+  ci::gl::drawString("Approx Work: " + workstr.str(),
+                     vec2(10, 55), ci::Color(1, 1, 0));
 
   particle_manager_.DrawParticles();
 }
