@@ -49,18 +49,14 @@ void FieldSimulator::draw() {
   }
 
   DrawFPS();
+  DrawMouseCoordinates();
   DrawGraphAxes();
   mParams->draw();
   mBatch2->draw();
 
-  ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", //Draw User Inputted Functions
-                     vec2(kWindowSize/2 - 30, 25));
-
-  std::ostringstream strx, stry;
-  strx << mouse_pos_.x;
-  stry << mouse_pos_.y;
-  ci::gl::drawString("COORDINATES: (" + strx.str() + ", " + stry.str() + ")", vec2(100, 100));
-  particle_manager_.DrawParticles();
+  std::string field_equation = "F = ("+i_component_+")i + ("+j_component_+")j";
+  ci::gl::drawString(field_equation, //Draw User Inputted Functions
+                     vec2(kWindowSize/2 - 5*field_equation.length()/2, 10), ci::Color( 1, 1, 0 ));
 
   if(left_down_ && in_range_) {
     particle_manager_.DrawMouseParticle(mouse_pos_);
@@ -95,7 +91,7 @@ void FieldSimulator::button(size_t id) {
     curve_handler_.ChangeColor(GetNextColor());
   } else if(id == 8) { // Calculate Work
     curve_handler_.CalculateCurveForces(i_component_, j_component_);
-    curve_handler_.CalculateWork();
+    total_work_ = curve_handler_.CalculateWork();
   }
 }
 
@@ -105,7 +101,6 @@ ci::Color FieldSimulator::GetNextColor() {
 }
 
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
-  std::cout << event.getPos() << std::endl;
   mouse_pos_ = event.getPos();
   if(pen_mode_) {
     curve_handler_.ApplyStroke(event.getPos());
@@ -118,8 +113,6 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
 }
 
 void FieldSimulator::mouseUp(ci::app::MouseEvent event) {
-  std::cout << "END COORDINATE: " << event.getPos() << std::endl;
-
   if(left_down_ && in_range_) {
     particle_manager_.AddParticle(5, event.getPos());
   }
@@ -131,7 +124,6 @@ void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
   if(pen_mode_) {
     curve_handler_.CreateStroke();
   }
-  std::cout << "START COORDINATES" << event.getPos() << std::endl;
   vec2 dist = vec2(event.getPos().x - particle_manager_.GetParticleShopPos().x,
                    event.getPos().y - particle_manager_.GetParticleShopPos().y);
   double length = glm::length(dist);
@@ -170,11 +162,18 @@ void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velo
   vertBatch->vertex(arrow_point_two);
 }
 
+void FieldSimulator::DrawMouseCoordinates() {
+  std::ostringstream strx, stry;
+  strx << mouse_pos_.x;
+  stry << mouse_pos_.y;
+  ci::gl::drawString("Mouse Position: (" + strx.str() + ", " + stry.str() + ")",
+                     vec2(10, 25), ci::Color(1, 1, 0));
+
+  particle_manager_.DrawParticles();
+}
+
 void FieldSimulator::DrawFPS() {
   // Render FPS
-  ci::gl::ScopedColor      scpColor( 0, 0, 0, 0.8f );
-  ci::gl::ScopedBlendAlpha scpBlend;
-  ci::gl::drawSolidRect( ci::Rectf( 0, 0, getWindowWidth(), 40 ) );
   std::stringstream strFps;
   strFps << int( getAverageFps() ) << " FPS";
   ci::gl::drawString( strFps.str(), vec2( 10, 10 ), ci::Color( 1, 1, 0 ) );

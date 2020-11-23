@@ -15,8 +15,7 @@ class CurveHandler {
   void ApplyStroke(const glm::vec2& brush_screen_coords);
   void ChangeColor(const ci::Color& color);
   void Clear();
-  void CalculateGraphPoints(const std::string& equation);
-  void CalculateWork();
+  double CalculateWork();
   void CalculateCurveForces(const string& i_comp, const string& j_comp);
 
  private:

@@ -24,9 +24,12 @@ class ParticleManager {
 
   vec2 GetParticleShopPos() const;
 
- private:
+  void DrawParticleShopBox();
 
-  const vec2 kParticleShopPos = vec2(500, 600);
+ private:
+  const ci::Color kParticleColor = ci::Color(204, 0, 204);
+  const size_t kShopBoxDist = 10;
+  const vec2 kParticleShopPos = vec2(680, 20);
   std::vector<Particle> particles_;
   FunctionHandler function_handler_;
 

@@ -7,14 +7,9 @@ void ParticleManager::AddParticle(size_t radius, const vec2& pos) {
 }
 
 void ParticleManager::DrawParticles() {
-  ci::gl::color(0, 0, 200);
-  /*
-  for(Particle& particle : particles_) {
-    //std::cout << "POSITION: " << particle.GetPosition() << std::endl;
-    vec2 particle_pos = particle.GetPosition();
-    ci::gl::drawSolidCircle(particle_pos, particle.GetRadius());
-  }*/
+  DrawParticleShopBox();
 
+  ci::gl::color(kParticleColor);
   ci::gl::drawSolidCircle(kParticleShopPos, 5);
 
   for(int x=0; x<particles_.size(); x++) {
@@ -45,7 +40,7 @@ void ParticleManager::ClearParticles() {
 }
 
 void ParticleManager::DrawMouseParticle(const vec2& pos) {
-  ci::gl::color(0, 0, 200);
+  ci::gl::color(kParticleColor);
   ci::gl::drawSolidCircle(pos, 5);
 }
 
@@ -53,4 +48,15 @@ vec2 ParticleManager::GetParticleShopPos() const {
   return kParticleShopPos;
 }
 
+void ParticleManager::DrawParticleShopBox() {
+  ci::gl::begin(GL_LINE_STRIP);
+  ci::gl::color(1, 1, 0);
+  ci::gl::lineWidth(5.0);
+  ci::gl::vertex(kParticleShopPos.x-kShopBoxDist, kParticleShopPos.y-kShopBoxDist); // top left
+  ci::gl::vertex(kParticleShopPos.x-kShopBoxDist, kParticleShopPos.y+kShopBoxDist); // bottom left
+  ci::gl::vertex(kParticleShopPos.x+kShopBoxDist, kParticleShopPos.y+kShopBoxDist); // bottom right
+  ci::gl::vertex(kParticleShopPos.x+kShopBoxDist, kParticleShopPos.y-kShopBoxDist); // top right
+  //ci::gl::vertex(kParticleShopPos.x-kShopBoxDist, kParticleShopPos.y-kShopBoxDist); // top left
+  ci::gl::end();
+}
 } // namespace vectorfield

@@ -86,6 +86,8 @@ class FieldSimulator : public ci::app::App {
 
   void DrawFPS();
 
+  void DrawMouseCoordinates();
+
   void InitializeFieldVectors();
 
   void SetupTweakBar();
@@ -125,6 +127,7 @@ class FieldSimulator : public ci::app::App {
   CurveHandler curve_handler_;
   bool pen_mode_ = false;
 
+  double total_work_;
   //std::string equation;
 };
 
