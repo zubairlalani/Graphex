@@ -43,6 +43,7 @@ void FieldSimulator::setup() {
 void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(ci::Color::black()), true);
+
   if(pen_mode_) {
     curve_handler_.Render();
   }
@@ -51,14 +52,19 @@ void FieldSimulator::draw() {
   DrawGraphAxes();
   mParams->draw();
   mBatch2->draw();
+
   ci::gl::drawString("F = ("+i_component_+")i + ("+j_component_+")j", //Draw User Inputted Functions
                      vec2(kWindowSize/2 - 30, 25));
 
+  std::ostringstream strx, stry;
+  strx << mouse_pos_.x;
+  stry << mouse_pos_.y;
+  ci::gl::drawString("COORDINATES: (" + strx.str() + ", " + stry.str() + ")", vec2(100, 100));
   particle_manager_.DrawParticles();
+
   if(left_down_ && in_range_) {
     particle_manager_.DrawMouseParticle(mouse_pos_);
   }
-
 }
 
 void FieldSimulator::update() {
@@ -87,6 +93,9 @@ void FieldSimulator::button(size_t id) {
     curve_handler_.Clear();
   } else if(id == 7) { // Change Pen Color
     curve_handler_.ChangeColor(GetNextColor());
+  } else if(id == 8) { // Calculate Work
+    curve_handler_.CalculateCurveForces(i_component_, j_component_);
+    curve_handler_.CalculateWork();
   }
 }
 
@@ -96,6 +105,8 @@ ci::Color FieldSimulator::GetNextColor() {
 }
 
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
+  std::cout << event.getPos() << std::endl;
+  mouse_pos_ = event.getPos();
   if(pen_mode_) {
     curve_handler_.ApplyStroke(event.getPos());
   }
@@ -107,6 +118,8 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
 }
 
 void FieldSimulator::mouseUp(ci::app::MouseEvent event) {
+  std::cout << "END COORDINATE: " << event.getPos() << std::endl;
+
   if(left_down_ && in_range_) {
     particle_manager_.AddParticle(5, event.getPos());
   }
@@ -118,7 +131,7 @@ void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
   if(pen_mode_) {
     curve_handler_.CreateStroke();
   }
-
+  std::cout << "START COORDINATES" << event.getPos() << std::endl;
   vec2 dist = vec2(event.getPos().x - particle_manager_.GetParticleShopPos().x,
                    event.getPos().y - particle_manager_.GetParticleShopPos().y);
   double length = glm::length(dist);
@@ -212,6 +225,8 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addButton("Exit Pen Mode", [ & ]() { button( 5 ); });
   mParams->addButton("Erase", [ & ]() { button( 6 ); });
   mParams->addButton("Change Pen Color", [ & ]() { button( 7 ); });
+  mParams->addButton("Calculate Work", [ & ]() { button( 8 ); });
+  //mParams->addParam("Enter Equation", &equation);
 }
 
 void FieldSimulator::CreateCoordinateSystem() {

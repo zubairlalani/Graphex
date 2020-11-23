@@ -124,6 +124,8 @@ class FieldSimulator : public ci::app::App {
 
   CurveHandler curve_handler_;
   bool pen_mode_ = false;
+
+  //std::string equation;
 };
 
 } // namespace visualizer

@@ -13,6 +13,7 @@ class FunctionHandler {
  public:
   vec2 EvaluateFunction(const string& i_comp, const string& j_comp, double x_val, double y_val);
 
+  bool SolveEquation(double x, double y, const std::string& equation);
 
  private:
 
@@ -20,6 +21,10 @@ class FunctionHandler {
   exprtk::expression<double> i_expr_; // Expression that user provided
   exprtk::expression<double> j_expr_; // Expression that user provided
   exprtk::parser<double> parser_; // Parses string version of expression into exprtk library math expression
+  exprtk::function_compositor<double> compositor_;
+  exprtk::function_compositor<double>::function function;
+  exprtk::expression<double> equation_expr_;
+
 
 };
 
