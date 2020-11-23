@@ -47,4 +47,23 @@ double FunctionHandler::EvaluateDivergence(const string& i_comp, const string& j
   double dQdy = exprtk::derivative(j_expr_2, "y");
   return dPdx + dQdy;
 }
+
+double FunctionHandler::Evaluate2DCurl(const string& i_comp, const string& j_comp,
+                                       double x_val, double y_val) {
+
+  symbol_table3_.add_variable("x", x_val);
+  symbol_table3_.add_variable("y", y_val);
+  symbol_table3_.add_constants();
+
+  i_expr_3.register_symbol_table(symbol_table3_);
+  j_expr_3.register_symbol_table(symbol_table3_);
+
+  parser2_.compile(i_comp, i_expr_3);
+  parser2_.compile(j_comp, j_expr_3);
+
+  double dPdy = exprtk::derivative(i_expr_3, "y");
+  double dQdx = exprtk::derivative(j_expr_3, "x");
+  std::cout << dPdy << " | " << dQdx << std::endl;
+  return dQdx - dPdy;
+}
 }

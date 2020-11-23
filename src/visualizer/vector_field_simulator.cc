@@ -13,6 +13,10 @@ void FieldSimulator::setup() {
 
   SetupTweakBar();
 
+
+  /*
+  std::cout << function_handler_.Evaluate2DCurl("2x*y", "3*cos(y)",
+                                   2.5, 3.716) << std::endl;*/
   //Experimenting with integration/derivatives:
   /*
   double x;
@@ -99,6 +103,8 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
   double x_val = (mouse_pos_.x - origin_.x)/x_unit_;
   double y_val = (origin_.y - mouse_pos_.y)/y_unit_;
   divergence_ = function_handler_.EvaluateDivergence(i_component_, j_component_, x_val, y_val);
+  curl_ = function_handler_.Evaluate2DCurl(i_component_, j_component_,x_val, y_val);
+
   if(pen_mode_) {
     curve_handler_.ApplyStroke(event.getPos());
   }
@@ -174,12 +180,17 @@ void FieldSimulator::DrawMouseCoordinates() {
                      vec2(10, 40), ci::Color(1, 1, 0));
 
 
+  std::ostringstream curlstr;
+  curlstr << curl_;
+  ci::gl::drawString("Curl: < 0, 0, " + curlstr.str() + ">",
+                     vec2(10, 55), ci::Color(1, 1, 0));
+
   std::ostringstream workstr;
 
   workstr << total_work_;
 
   ci::gl::drawString("Approx Work: " + workstr.str(),
-                     vec2(10, 55), ci::Color(1, 1, 0));
+                     vec2(10, 70), ci::Color(1, 1, 0));
 
   particle_manager_.DrawParticles();
 }

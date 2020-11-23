@@ -34,6 +34,11 @@ class FunctionHandler {
   exprtk::symbol_table<double> symbol_table2_;
   exprtk::parser<double> parser2_;
 
+  exprtk::expression<double> i_expr_3; // Expression that user provided
+  exprtk::expression<double> j_expr_3; // Expression that user provided
+  exprtk::symbol_table<double> symbol_table3_;
+  exprtk::parser<double> parser3_;
+
 
 };
 
