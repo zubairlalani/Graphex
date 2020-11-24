@@ -57,11 +57,14 @@ class Particle {
    */
   void SetVelocity(const glm::vec2& vel);
 
+  glm::vec2 GetInitialPos() const;
+
  private:
 
   glm::vec2 position_; // Keeps track of x and y coordinates
   glm::vec2 velocity_;    // Keeps track of x and y components of velocity_
   size_t radius_;         // radius of a single circular particle
+  glm::vec2 initial_pos_;
 
 };
 } // namespace vectorfield

@@ -27,10 +27,20 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
     double x_val = (particle.GetXPosition() - 350)/30;
     double y_val = -1*(particle.GetYPosition() - 350)/30; //Dist from origin then divide by the unit scale
 
-    if(abs(x_val) < 10 && abs(y_val) < 10) {
+    if (abs(x_val) < 10 && abs(y_val) < 10) {
       vec2 new_velocity = function_handler_.EvaluateFunction(i_comp, j_comp, x_val, y_val);
       particle.SetVelocity(new_velocity);
       particle.UpdatePosition();
+    } else {
+      particle.SetPosition(particle.GetInitialPos());
+      /*
+      vec2 dist_to_shop = vec2(kParticleShopPos.x - particle.GetXPosition(),
+                               kParticleShopPos.y - particle.GetYPosition());
+      vec2 proj = (glm::dot(particle.GetVelocity(), dist_to_shop)/glm::length(dist_to_shop)) * dist_to_shop;
+      proj/=glm::length(proj);
+      vec2 new_velocity = kReturnVelocityMultiplier * proj;
+      particle.SetVelocity(new_velocity);
+      particle.UpdatePosition();*/
     }
   }
 }

@@ -27,12 +27,13 @@ class ParticleManager {
   void DrawParticleShopBox();
 
  private:
+  const float kReturnVelocityMultiplier = 3;
   const ci::Color kParticleColor = ci::Color(204, 0, 204);
   const size_t kShopBoxDist = 10;
   const vec2 kParticleShopPos = vec2(680, 20);
   std::vector<Particle> particles_;
   FunctionHandler function_handler_;
-
+  std::vector<Particle> return_particles_;
 };
 }
 

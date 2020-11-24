@@ -4,6 +4,7 @@ namespace vectorfield {
 Particle::Particle(size_t radius, const glm::vec2& pos) {
   radius_ = radius;
   position_ = pos;
+  initial_pos_ = position_;
 }
 
 void Particle::SetVelocity(const glm::vec2 &vel) {
@@ -30,5 +31,13 @@ double Particle::GetXPosition() const {
 
 double Particle::GetYPosition() const {
   return position_.y;
+}
+
+glm::vec2 Particle::GetInitialPos() const {
+  return initial_pos_;
+}
+
+void Particle::SetPosition(const glm::vec2 &pos) {
+  position_ = pos;
 }
 }
