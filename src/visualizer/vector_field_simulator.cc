@@ -14,9 +14,6 @@ void FieldSimulator::setup() {
   SetupTweakBar();
 
 
-  /*
-  std::cout << function_handler_.Evaluate2DCurl("2x*y", "3*cos(y)",
-                                   2.5, 3.716) << std::endl;*/
   //Experimenting with integration/derivatives:
   /*
   double x;
@@ -25,6 +22,7 @@ void FieldSimulator::setup() {
   parser.compile(integrate_expr, expr);
   double area = exprtk::integrate(expr, x, -1.0, 1.0);*/
 
+  std::cout << function_handler_.SolveEquation(3, "sqrt(9-x^2)") << std::endl;
   CreateCoordinateSystem();
 
   InitializeBatch();
@@ -42,9 +40,9 @@ void FieldSimulator::draw() {
 
   ci::gl::clear(ci::Color(ci::Color::black()), true);
 
-  if(pen_mode_) {
+  //if(pen_mode_) {
     curve_handler_.Render();
-  }
+  //}
 
   ci::gl::color( 0, 191, 255 );
   mParams->draw();
@@ -59,7 +57,8 @@ void FieldSimulator::draw() {
 
   std::string field_equation = "F = ("+i_component_+")i + ("+j_component_+")j";
   ci::gl::drawString(field_equation, //Draw User Inputted Functions
-                     vec2(kWindowSize/2 - 5*field_equation.length()/2, 10), ci::Color( 1, 1, 0 ));
+                     vec2(kWindowSize/2 - 5*field_equation.length()/2, 10),
+                     ci::Color( 1, 1, 0 ));
 
   if(left_down_ && in_range_) {
     particle_manager_.DrawMouseParticle(mouse_pos_);
@@ -95,6 +94,10 @@ void FieldSimulator::button(size_t id) {
   } else if(id == 8) { // Calculate Work
     curve_handler_.CalculateCurveForces(i_component_, j_component_);
     total_work_ = curve_handler_.CalculateWork();
+  } else if(id == 9) { // Graph button
+    curve_handler_.CalculateGraphCoordinates(kScale, equation_);
+  } else if(id == 10) { // Clear Graph button
+    curve_handler_.ClearGraph();
   }
 }
 
@@ -256,6 +259,11 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addButton("Erase", [ & ]() { button( 6 ); });
   mParams->addButton("Change Pen Color", [ & ]() { button( 7 ); });
   mParams->addButton("Calculate Work", [ & ]() { button( 8 ); });
+
+  mParams->addSeparator("Grapher");
+  mParams->addParam("y = ", &equation_);
+  mParams->addButton("Graph", [ & ]() { button( 9); });
+  mParams->addButton("Clear Graph", [ & ]() { button( 10); });
   //mParams->addParam("Enter Equation", &equation);
 }
 

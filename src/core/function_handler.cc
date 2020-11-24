@@ -18,12 +18,14 @@ vec2 FunctionHandler::EvaluateFunction(const string& i_component, const string& 
   return vec2(i_expr_.value(), j_expr_.value());
 }
 
-bool FunctionHandler::SolveEquation(double x, double y, const std::string& equation) {
-  symbol_table_.add_variable("x", x);
-  symbol_table_.add_variable("y", y);
-  symbol_table_.add_constants();
+double FunctionHandler::SolveEquation(double x, const std::string& equation) {
+  exprtk::symbol_table<double> table;
+  exprtk::expression<double> equation_expr_;
 
-  equation_expr_.register_symbol_table(symbol_table_);
+  table.add_variable("x", x);
+  table.add_constants();
+
+  equation_expr_.register_symbol_table(table);
   parser_.compile(equation, equation_expr_);
 
   return equation_expr_.value();

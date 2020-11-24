@@ -18,6 +18,15 @@ void CurveHandler::Render() const {
       ci::gl::end();
     }
   }
+
+  if(!graph_points_.empty()) {
+    ci::gl::begin(GL_LINE_STRIP);
+    ci::gl::lineWidth(10.0);
+    for(const auto & graph_point : graph_points_) {
+      ci::gl::vertex(graph_point);
+    }
+    ci::gl::end();
+  }
 }
 
 void CurveHandler::CreateStroke() {
@@ -85,5 +94,22 @@ double CurveHandler::CalculateWork() {
 
   std::cout << "TOTAL WORK: " << total_work << std::endl;
   return total_work;
+}
+
+void CurveHandler::CalculateGraphCoordinates(int graph_scale, const string& equation) {
+  double stepSize = 0.01;
+  for (double x = -graph_scale; x < graph_scale+1+stepSize/2; x+= stepSize)
+  {
+    double y = function_handler_.SolveEquation(x, equation);
+    if(abs(y) <= static_cast<double>(graph_scale)) {
+      double x_screen_coord = 30*x + 350; // convert from graph coordinates to screen coordinates
+      double y_screen_coord = 350 - 30*y;
+      graph_points_.emplace_back(vec2(x_screen_coord, y_screen_coord));
+    }
+  }
+}
+
+void CurveHandler::ClearGraph(){
+  graph_points_.clear();
 }
 } // namespace vectorfield

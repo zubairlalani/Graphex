@@ -139,7 +139,8 @@ class FieldSimulator : public ci::app::App {
   double total_work_;
   double divergence_;
   double curl_;
-  //std::string equation;
+  std::string equation_;
+
 };
 
 } // namespace visualizer
