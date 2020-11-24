@@ -140,6 +140,7 @@ class FieldSimulator : public ci::app::App {
   double divergence_;
   double curl_;
   std::string equation_;
+  std::string equation2_;
 
 };
 

@@ -13,16 +13,6 @@ void FieldSimulator::setup() {
 
   SetupTweakBar();
 
-
-  //Experimenting with integration/derivatives:
-  /*
-  double x;
-  table.add_variable("x", x);
-  expr.register_symbol_table(table);
-  parser.compile(integrate_expr, expr);
-  double area = exprtk::integrate(expr, x, -1.0, 1.0);*/
-
-  std::cout << function_handler_.SolveEquation(3, "sqrt(9-x^2)") << std::endl;
   CreateCoordinateSystem();
 
   InitializeBatch();
@@ -95,9 +85,16 @@ void FieldSimulator::button(size_t id) {
     curve_handler_.CalculateCurveForces(i_component_, j_component_);
     total_work_ = curve_handler_.CalculateWork();
   } else if(id == 9) { // Graph button
+    curve_handler_.CreateGraph();
     curve_handler_.CalculateGraphCoordinates(kScale, equation_);
+    if(!equation2_.empty()) {
+      curve_handler_.CreateGraph();
+      curve_handler_.CalculateGraphCoordinates(kScale, equation2_);
+    }
   } else if(id == 10) { // Clear Graph button
-    curve_handler_.ClearGraph();
+    curve_handler_.ClearGraphs();
+  } else if(id == 11) {
+    curve_handler_.UndoGraph();
   }
 }
 
@@ -262,8 +259,10 @@ void FieldSimulator::SetupTweakBar() {
 
   mParams->addSeparator("Grapher");
   mParams->addParam("y = ", &equation_);
+  mParams->addParam("y2 = ", &equation2_);
   mParams->addButton("Graph", [ & ]() { button( 9); });
   mParams->addButton("Clear Graph", [ & ]() { button( 10); });
+  mParams->addButton("Undo", [ & ]() { button( 11); });
   //mParams->addParam("Enter Equation", &equation);
 }
 

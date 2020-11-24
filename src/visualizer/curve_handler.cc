@@ -19,13 +19,15 @@ void CurveHandler::Render() const {
     }
   }
 
-  if(!graph_points_.empty()) {
-    ci::gl::begin(GL_LINE_STRIP);
-    ci::gl::lineWidth(10.0);
-    for(const auto & graph_point : graph_points_) {
-      ci::gl::vertex(graph_point);
+  if(!graphs.empty()) {
+    for(const auto & graph : graphs) {
+      ci::gl::begin(GL_LINE_STRIP);
+      ci::gl::lineWidth(10.0);
+      for(const glm::vec2 &point : graph) {
+        ci::gl::vertex(point);
+      }
+      ci::gl::end();
     }
-    ci::gl::end();
   }
 }
 
@@ -104,12 +106,22 @@ void CurveHandler::CalculateGraphCoordinates(int graph_scale, const string& equa
     if(abs(y) <= static_cast<double>(graph_scale)) {
       double x_screen_coord = 30*x + 350; // convert from graph coordinates to screen coordinates
       double y_screen_coord = 350 - 30*y;
-      graph_points_.emplace_back(vec2(x_screen_coord, y_screen_coord));
+      graphs.back().emplace_back(vec2(x_screen_coord, y_screen_coord));
     }
   }
 }
 
-void CurveHandler::ClearGraph(){
-  graph_points_.clear();
+void CurveHandler::CreateGraph() {
+  graphs.emplace_back();
+}
+
+void CurveHandler::ClearGraphs(){
+  graphs.clear();
+}
+
+void CurveHandler::UndoGraph() {
+  if(graphs.size() > 0) {
+    graphs.pop_back();
+  }
 }
 } // namespace vectorfield

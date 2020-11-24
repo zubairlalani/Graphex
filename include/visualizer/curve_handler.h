@@ -18,13 +18,16 @@ class CurveHandler {
   double CalculateWork();
   void CalculateCurveForces(const string& i_comp, const string& j_comp);
   void CalculateGraphCoordinates(int graph_scale, const string& equation);
-  void ClearGraph();
+  void CreateGraph();
+  void ClearGraphs();
+  void UndoGraph();
+
  private:
   std::vector<std::vector<glm::vec2>> strokes_;
   ci::Color stroke_color_;
   FunctionHandler function_handler_;
   std::vector<glm::vec2> forces_;
-  std::vector<glm::vec2> graph_points_;
+  std::vector<std::vector<glm::vec2>> graphs;
 
 };
 } // namespace vectorfield
