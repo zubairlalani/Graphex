@@ -13,6 +13,7 @@
 #include "cinder/params/Params.h"
 #import "curve_handler.h"
 #include "particle_manager.h"
+#include "shader.h"
 
 
 namespace vectorfield {
@@ -141,6 +142,9 @@ class FieldSimulator : public ci::app::App {
   double curl_;
   std::string equation_;
   std::string equation2_;
+
+
+  //3D stuff
 
 };
 
