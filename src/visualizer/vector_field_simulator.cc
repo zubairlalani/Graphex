@@ -138,6 +138,8 @@ void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
   if(length < 10) {
     in_range_ = true;
   }
+
+  particle_manager_.AddReturnParticle(event.getPos());
 }
 
 void FieldSimulator::ClearArrows() {

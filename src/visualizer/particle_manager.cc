@@ -17,6 +17,14 @@ void ParticleManager::DrawParticles() {
                                       particles_[x].GetYPosition()),
                             particles_[x].GetRadius());
   }
+
+  for(int x=0; x<return_particles_.size(); x++) {
+    ci::gl::drawSolidCircle(glm::vec2(return_particles_[x].GetXPosition(),
+                                      return_particles_[x].GetYPosition()),
+                            return_particles_[x].GetRadius());
+  }
+
+
 }
 
 void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp) {
@@ -33,16 +41,22 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
       particle.UpdatePosition();
     } else {
       particle.SetPosition(particle.GetInitialPos());
-      /*
-      vec2 dist_to_shop = vec2(kParticleShopPos.x - particle.GetXPosition(),
-                               kParticleShopPos.y - particle.GetYPosition());
-      vec2 proj = (glm::dot(particle.GetVelocity(), dist_to_shop)/glm::length(dist_to_shop)) * dist_to_shop;
-      proj/=glm::length(proj);
-      vec2 new_velocity = kReturnVelocityMultiplier * proj;
-      particle.SetVelocity(new_velocity);
-      particle.UpdatePosition();*/
     }
   }
+
+  for(size_t i = 0; i<return_particles_.size(); i++) {
+    vec2 dist = vec2(return_particles_[i].GetXPosition() - kParticleShopPos.x,
+                     return_particles_[i].GetYPosition() - kParticleShopPos.y);
+    double length = glm::length(dist);
+    if(length < 10) {
+      return_particles_.erase(return_particles_.begin() + i);
+      i--;
+    } else {
+      return_particles_[i].UpdatePosition();
+    }
+  }
+
+
 }
 
 void ParticleManager::ClearParticles() {
@@ -53,6 +67,25 @@ void ParticleManager::DrawMouseParticle(const vec2& pos) {
   ci::gl::color(kParticleColor);
   ci::gl::drawSolidCircle(pos, 5);
 }
+
+void ParticleManager::AddReturnParticle(const vec2& pos) {
+  for(size_t x = 0; x< particles_.size(); x++) {
+    vec2 dist = vec2(pos.x - particles_[x].GetXPosition(),
+                     pos.y - particles_[x].GetYPosition());
+    double length = glm::length(dist);
+    if(length < 10) {
+      vec2 dist_to_shop = vec2(kParticleShopPos.x - particles_[x].GetXPosition(),
+                               particles_[x].GetYPosition() - kParticleShopPos.y);
+      vec2 proj = (abs(glm::dot(particles_[x].GetVelocity(), dist_to_shop))/glm::length(dist_to_shop)) * dist_to_shop;
+      proj/=glm::length(proj);
+      vec2 new_velocity = kReturnVelocityMultiplier * proj;
+      particles_[x].SetVelocity(new_velocity);
+      return_particles_.push_back(particles_[x]);
+      particles_.erase(particles_.begin()+x);
+    }
+  }
+}
+
 
 vec2 ParticleManager::GetParticleShopPos() const {
   return kParticleShopPos;

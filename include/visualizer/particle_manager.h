@@ -26,8 +26,10 @@ class ParticleManager {
 
   void DrawParticleShopBox();
 
+  void AddReturnParticle(const vec2& pos);
+
  private:
-  const float kReturnVelocityMultiplier = 3;
+  const float kReturnVelocityMultiplier = 7;
   const ci::Color kParticleColor = ci::Color(204, 0, 204);
   const size_t kShopBoxDist = 10;
   const vec2 kParticleShopPos = vec2(680, 20);
