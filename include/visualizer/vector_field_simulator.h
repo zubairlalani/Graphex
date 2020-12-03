@@ -61,11 +61,10 @@ class FieldSimulator : public ci::app::App {
   void keyDown(ci::app::KeyEvent event) override;
 
   void mouseWheel(ci::app::MouseEvent event) override;
+
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
-  const size_t kGraphMargin = 50; // Dist from sides of window that graph axes are drawn
-  //const size_t kInputBoxHeight = 100;
   const int kScale = 10; // Determines how many units an axis goes up to
   const int kVectorScale = 10; // Number of vectors that will be drawn
   const float kArrowHeight = 3.0f; // Height of arrowhead
@@ -88,44 +87,38 @@ class FieldSimulator : public ci::app::App {
 
   void InitializeArrowVertices(int x, int y, const glm::vec2& velocity);
 
-  void DrawGraphAxes();
+  void Initialize3DArrowVertices();
 
   void DrawFPS();
 
   void DrawMouseCoordinates();
 
-  void InitializeFieldVectors();
+  void DrawCalculations();
 
-  void Initialize3DFieldVectors();
+  void InitializeFieldVectors();
 
   void SetupTweakBar();
 
-  void CreateCoordinateSystem();
-
   void InitializeBatch();
 
-  void DrawTikMarks();
+  void InitializeBuffers(const std::vector<float>& vertices);
 
-  void DrawArrow(const glm::vec2& start, const glm::vec2& end, float arrow_base, float arrow_height);
+  void CalculateMVPMatrix();
 
   ci::Color GetNextColor();
 
-  size_t color_index_ = 0;
+  size_t color_index_ = 0; // Determines where in pen color array we are in
+
   ci::params::InterfaceGlRef mParams; // Used for user input
 
-  string i_component_; // Representation of i-component of the vector field that user provided
-  string j_component_; // Representation of j-component of the vector field that user provided
-  string k_component_;
+  string i_component_; // i-component of the vector field that user provided
+  string j_component_; // j-component of the vector field that user provided
+  string k_component_; // k-component of the vector field that user provided
 
-  string x_pos_;
-  string y_pos_;
-
-  glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
-  double x_unit_; // Amount of pixels that a single x unit is
-  double y_unit_; // Amount of pixels that a single y unit is
+  string x_pos_; // x position of particle that user inputted
+  string y_pos_; // y position of particle that user inputted
 
   ParticleManager particle_manager_; // Draws and updates all particles on screen
-  std::map<std::pair<int, int>, glm::vec2> field_vectors_; // Maps coordinate points to their corresponding velocity vectors
   float image_scaling_factor_ = .1f; // Relative size of the arrows
 
   FunctionHandler function_handler_; // Computes all math involved
@@ -134,10 +127,6 @@ class FieldSimulator : public ci::app::App {
   glm::vec2 mouse_pos_;
   bool left_down_;
   bool in_range_;
-
-  ci::gl::GlslProgRef       mGlslProg;
-  ci::gl::BatchRef          mBatch;
-  ci::gl::VertBatchRef      tik_vert_batch;
 
   ci::gl::GlslProgRef       mGlslProg2;
   ci::gl::BatchRef arrow_batch_;
@@ -149,16 +138,17 @@ class FieldSimulator : public ci::app::App {
   double total_work_;
   double divergence_;
   double curl_;
-  std::string equation_;
-  std::string equation2_;
+  bool conservative = false;
 
+  std::string equation_;  // Equation that the user inputs for graph 1
+  std::string equation2_; // Equation that the user inputs for graph 2
 
   //3D stuff
   Shader ourShader = Shader("visualizer/shader.vs", "visualizer/shader.fs");
   unsigned int VBO2, VAO2;
   glm::mat4 model, view, projection;
   //Axis stuff
-  float axisvertices[6*3] = {
+  std::vector<float> axisvertices = {
       0.0f, 5.0f, 0.0f,
       0.0f, -5.0f, 0.0f,
       5.0f, 0.0f, 0.0f,
@@ -166,21 +156,15 @@ class FieldSimulator : public ci::app::App {
       0.0f, 0.0f, 5.0f,
       0.0f, 0.0f, -5.0f
   };
+
   Camera camera = Camera(glm::vec3(0, 0, 13.0f));
   bool firstMouse = true;
 
-  // timing
-  float deltaTime = 0.0f;	// time between current frame and last frame
-  float lastFrame = 0.0f;
-
   glm::vec2 mousePos = glm::vec2(0, 0);
 
-  bool print = false;
-  bool toggle3d = true;
+  bool toggle3d = false;
 
   size_t line_amnt = 18;
-  bool conservative = false;
-
 };
 
 } // namespace visualizer

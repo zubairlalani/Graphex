@@ -87,7 +87,15 @@ double GraphHandler::GetYUnit() const {
   return y_unit_;
 }
 
-vec2 GraphHandler::CartesianToScreenCoordinates(const vec2& cartesian_coords) {
-  return vec2();
+vec2 GraphHandler::ConvertScreenToCartesian(const vec2& screen_coords) {
+  double x_val = (screen_coords.x - origin_.x) / x_unit_;
+  double y_val = (origin_.y - screen_coords.y) / y_unit_;
+  return vec2(x_val, y_val);
+}
+
+vec2 GraphHandler::ConvertCartesianToScreen(const vec2& cart_coords) {
+  float x_val = origin_.x + x_unit_ * cart_coords.x;
+  float y_val = origin_.y - y_unit_ * cart_coords.y;
+  return vec2(x_val, y_val);
 }
 }

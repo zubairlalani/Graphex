@@ -13,7 +13,8 @@ class GraphHandler {
   void DrawGraphAxes();
   void CreateCoordinateSystem();
   void SetupTikMarkVertices();
-  vec2 CartesianToScreenCoordinates(const vec2& cartesian_coords);
+  vec2 ConvertScreenToCartesian(const vec2& screen_coords);
+  vec2 ConvertCartesianToScreen(const vec2& cart_coords);
   void InitializeTikMarkBatch();
   vec2 GetOrigin() const;
   double GetXUnit() const;
