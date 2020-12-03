@@ -89,7 +89,23 @@ double FunctionHandler::Evaluate2DCurl(const string& i_comp, const string& j_com
 
   double dPdy = exprtk::derivative(i_expr_3, "y");
   double dQdx = exprtk::derivative(j_expr_3, "x");
-  std::cout << dPdy << " | " << dQdx << std::endl;
   return dQdx - dPdy;
 }
+
+bool FunctionHandler::IsConservative(const string& i_comp, const string& j_comp, int scale,size_t accuracy_lvl) {
+  double epsilon = 0.001;
+  srand(static_cast<unsigned>(time(0)));
+  float random_x_val;
+  float random_y_val;
+  for(int i = 0; i < accuracy_lvl; i++) {
+    random_x_val = -scale + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(scale - (-scale))));
+    random_y_val = -scale + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(scale - (-scale))));
+    double val = Evaluate2DCurl(i_comp, j_comp, random_x_val, random_y_val);
+    if(abs(val) > epsilon){
+      return false;
+    }
+  }
+  return true;
 }
+
+} // namespace vectorfield

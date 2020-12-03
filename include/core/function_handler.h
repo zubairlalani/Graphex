@@ -22,6 +22,9 @@ class FunctionHandler {
 
   double Evaluate2DCurl(const string& i_comp, const string& j_comp, double x_val, double y_val);
 
+  bool IsConservative(const string& i_comp, const string& j_comp, int scale, size_t accuracy_lvl);
+
+
  private:
 
   exprtk::symbol_table<double> symbol_table_; // Used for Math expression parsing --> holds diff types of variable, constants, etc

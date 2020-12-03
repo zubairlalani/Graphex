@@ -25,13 +25,12 @@ void FieldSimulator::setup() {
   x_pos_ = strx.str();
   y_pos_ = stry.str();
 
-
   //3D GRAPH SETUP
 
   glEnable(GL_DEPTH_TEST);
 
-  glGenVertexArrays(2, &VAO2);
-  glGenBuffers(2, &VBO2);
+  glGenVertexArrays(1, &VAO2);
+  glGenBuffers(1, &VBO2);
 
   glBindVertexArray(VAO2);
 
@@ -41,6 +40,10 @@ void FieldSimulator::setup() {
   //position attribute
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
+
+  /*
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);*/
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
@@ -56,6 +59,7 @@ void FieldSimulator::draw() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   //----------------------------------------------------------------------
+
   mParams->draw();
   std::string field_equation =
       "F = (" + i_component_ + ")i + (" + j_component_ + ")j + ("+k_component_ +")k";
@@ -64,13 +68,18 @@ void FieldSimulator::draw() {
       vec2(kWindowSize / 2 - 5 * field_equation.length() / 2, 10),
       ci::Color(1, 1, 0));
   DrawFPS();
+  DrawMouseCoordinates();
 
   if(!toggle3d) {
     curve_handler_.Render();
     ci::gl::color(0, 191, 255);
     mBatch2->draw();
 
-    DrawMouseCoordinates();
+    if(conservative) {
+      ci::gl::drawString("Conservative: true", vec2(10, 85), ci::Color(1, 1, 0));
+    } else {
+      ci::gl::drawString("Conservative: false", vec2(10, 85),ci::Color(1, 1, 0));
+    }
 
     ci::gl::color(1, 1, 0);
 
@@ -121,8 +130,9 @@ void FieldSimulator::button(size_t id) {
       vertBatch = ci::gl::VertBatch::create(GL_LINES);
       InitializeFieldVectors();
       mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+      conservative = function_handler_.IsConservative(i_component_, j_component_, kVectorScale, 1000);
     } else {
-      Initialize3DFieldVectors();
+      //Initialize3DFieldVectors();
     }
   } else if(id == 1 && !toggle3d) { // Clear Field Button
     ClearArrows();
@@ -163,8 +173,8 @@ void FieldSimulator::button(size_t id) {
     if(toggle3d) {
       glEnable(GL_DEPTH_TEST);
 
-      glGenVertexArrays(2, &VAO2);
-      glGenBuffers(2, &VBO2);
+      glGenVertexArrays(1, &VAO2);
+      glGenBuffers(1, &VBO2);
 
       glBindVertexArray(VAO2);
 
@@ -176,9 +186,14 @@ void FieldSimulator::button(size_t id) {
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                             (void*)0);
       glEnableVertexAttribArray(0);
+      /*
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3 * sizeof(float)));
+      glEnableVertexAttribArray(1);*/
 
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindVertexArray(0);
+
+      line_amnt = 18;
     }
   }
 }
@@ -189,11 +204,15 @@ ci::Color FieldSimulator::GetNextColor() {
 }
 
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
-  mouse_pos_ = event.getPos();
-  double x_val = (mouse_pos_.x - origin_.x)/x_unit_;
-  double y_val = (origin_.y - mouse_pos_.y)/y_unit_;
-  divergence_ = function_handler_.EvaluateDivergence(i_component_, j_component_, x_val, y_val);
-  curl_ = function_handler_.Evaluate2DCurl(i_component_, j_component_,x_val, y_val);
+  if(!toggle3d) {
+    mouse_pos_ = event.getPos();
+    double x_val = (mouse_pos_.x - origin_.x) / x_unit_;
+    double y_val = (origin_.y - mouse_pos_.y) / y_unit_;
+    divergence_ = function_handler_.EvaluateDivergence(
+        i_component_, j_component_, x_val, y_val);
+    curl_ = function_handler_.Evaluate2DCurl(i_component_, j_component_, x_val,
+                                             y_val);
+  }
 
   if(pen_mode_) {
     curve_handler_.ApplyStroke(event.getPos());
@@ -261,13 +280,20 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
             dynamic_vec.push_back(static_cast<float>(x));
             dynamic_vec.push_back(static_cast<float>(z));
             dynamic_vec.push_back(static_cast<float>(y)); // y - axis is the upward direction, so to make it the cartesian coordinate system switch y and z
-
+            /*
+            dynamic_vec.push_back(1.0f);
+            dynamic_vec.push_back(1.0f);
+            dynamic_vec.push_back(0.0f);*/
             //glm::vec3 vel(x, y, z);
             vec3 vel = function_handler_.Evaluate3DFunction(i_component_, j_component_, k_component_, x, y, z);
             glm::vec3 scaled = image_scaling_factor_ * vel;
             dynamic_vec.push_back(static_cast<float>(x) + scaled.x);
             dynamic_vec.push_back(static_cast<float>(z) + scaled.z);
             dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
+            /*
+            dynamic_vec.push_back(1.0f);
+            dynamic_vec.push_back(1.0f);
+            dynamic_vec.push_back(0.0f);*/
           }
         }
       }
@@ -290,6 +316,9 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
       //position attribute
       glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
       glEnableVertexAttribArray(0);
+      /*
+      glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3 * sizeof(float)));
+      glEnableVertexAttribArray(1);*/
 
       glBindBuffer(GL_ARRAY_BUFFER, 0);
       glBindVertexArray(0);
@@ -355,6 +384,7 @@ void FieldSimulator::DrawMouseCoordinates() {
   ci::gl::drawString("Mouse Position: (" + strx.str() + ", " + stry.str() + ")",
                      vec2(10, 25), ci::Color(1, 1, 0));
 
+  if(!toggle3d) {
   std::ostringstream divstr;
 
   divstr << divergence_;
@@ -375,7 +405,8 @@ void FieldSimulator::DrawMouseCoordinates() {
   ci::gl::drawString("Approx Work: " + workstr.str(),
                      vec2(10, 70), ci::Color(1, 1, 0));
 
-  particle_manager_.DrawParticles();
+    particle_manager_.DrawParticles();
+  }
 }
 
 void FieldSimulator::DrawFPS() {

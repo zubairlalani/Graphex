@@ -163,7 +163,7 @@ class FieldSimulator : public ci::app::App {
       5.0f, 0.0f, 0.0f,
       -5.0f, 0.0f, 0.0f,
       0.0f, 0.0f, 5.0f,
-      0.0f, 0.0f, -5.0f,
+      0.0f, 0.0f, -5.0f
   };
   Camera camera = Camera(glm::vec3(0, 0, 13.0f));
   bool firstMouse = true;
@@ -178,6 +178,7 @@ class FieldSimulator : public ci::app::App {
   bool toggle3d = true;
 
   size_t line_amnt = 18;
+  bool conservative = false;
 
 };
 

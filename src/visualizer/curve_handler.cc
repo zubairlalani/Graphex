@@ -70,19 +70,21 @@ double CurveHandler::CalculateWork() {
   double total_work = 0;
   if(!strokes_.empty()) {
     for(const std::vector<glm::vec2> &stroke : strokes_) {
-      for(size_t point_index = 0; point_index < stroke.size()-1; point_index++) {
-        double x_val = (stroke[point_index].x - 350)/30;
-        double y_val = -1*(stroke[point_index].y - 350)/30; //Dist from origin then divide by the unit scale
-        double x_val2 = (stroke[point_index + 1].x - 350)/30;
-        double y_val2 = -1*(stroke[point_index + 1].y - 350)/30; //Dist from origin then divide by the unit scale
-        vec2 delta_disp = vec2(x_val2-x_val, y_val2 - y_val);
+      for (size_t point_index = 0; point_index < stroke.size() - 1;
+           point_index++) {
+        double x_val = (stroke[point_index].x - 350) / 30;
+        double y_val = -1 * (stroke[point_index].y - 350) /
+                       30;  // Dist from origin then divide by the unit scale
+        double x_val2 = (stroke[point_index + 1].x - 350) / 30;
+        double y_val2 = -1 * (stroke[point_index + 1].y - 350) /
+                        30;  // Dist from origin then divide by the unit scale
+        vec2 delta_disp = vec2(x_val2 - x_val, y_val2 - y_val);
         double work_increment = glm::dot(forces_[point_index], delta_disp);
-        //std::cout << "DELTA FORCE: " << forces_[point_index] << "DELTA DISP: " << delta_disp << "WORK: " << work_increment << std::endl;
-        total_work+=work_increment;
+        // std::cout << "DELTA FORCE: " << forces_[point_index] << "DELTA DISP: " << delta_disp << "WORK: " << work_increment << std::endl;
+        total_work += work_increment;
       }
 
-      //TODO: REMOVE LATER
-      //For testing purposes by using Fundamental Theorem of Line Integrals
+      //Using Fundamental Theorem of Line Integrals
       double endx = (stroke.back().x - 350) /30;
       double endy = (350 - stroke.back().y) / 30;
       double begx = (stroke.front().x - 350) / 30;
@@ -90,7 +92,7 @@ double CurveHandler::CalculateWork() {
       double endval = .5 * endx * endx + .5 * endy * endy;
       double begval = .5 * begx * begx + .5 * begy * begy;
       double diff = endval - begval;
-      std::cout << "WORK BY FTLT: " << endval << " " << begval << " " << diff << std::endl;
+      std::cout << "WORK BY FTLT for the Field <x, y>: " << endval << " " << begval << " " << diff << std::endl;
     }
   }
 
