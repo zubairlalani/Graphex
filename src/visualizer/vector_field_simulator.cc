@@ -24,34 +24,89 @@ void FieldSimulator::setup() {
   stry << origin_.y;
   x_pos_ = strx.str();
   y_pos_ = stry.str();
+
+
+  //3D GRAPH SETUP
+
+  glEnable(GL_DEPTH_TEST);
+
+  glGenVertexArrays(2, &VAO2);
+  glGenBuffers(2, &VBO2);
+
+  glBindVertexArray(VAO2);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(axisvertices), axisvertices, GL_STATIC_DRAW);
+
+  //position attribute
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
 void FieldSimulator::draw() {
 
+  float currentFrame = ci::app::getElapsedSeconds();
+  deltaTime = currentFrame - lastFrame;
+  lastFrame = currentFrame;
+
   ci::gl::clear(ci::Color(ci::Color::black()), true);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  //if(pen_mode_) {
-    curve_handler_.Render();
-  //}
-
-  ci::gl::color( 0, 191, 255 );
+  //----------------------------------------------------------------------
   mParams->draw();
-  mBatch2->draw();
-
+  std::string field_equation =
+      "F = (" + i_component_ + ")i + (" + j_component_ + ")j";
+  ci::gl::drawString(
+      field_equation,  // Draw User Inputted Functions
+      vec2(kWindowSize / 2 - 5 * field_equation.length() / 2, 10),
+      ci::Color(1, 1, 0));
   DrawFPS();
-  DrawMouseCoordinates();
-  ci::gl::color( 1, 1, 0 );
-  DrawGraphAxes();
-  ci::gl::color( 1, 1, 0 );
-  mBatch->draw();
 
-  std::string field_equation = "F = ("+i_component_+")i + ("+j_component_+")j";
-  ci::gl::drawString(field_equation, //Draw User Inputted Functions
-                     vec2(kWindowSize/2 - 5*field_equation.length()/2, 10),
-                     ci::Color( 1, 1, 0 ));
+  if(!toggle3d) {
+    curve_handler_.Render();
+    ci::gl::color(0, 191, 255);
+    mBatch2->draw();
 
-  if(left_down_ && in_range_) {
-    particle_manager_.DrawMouseParticle(mouse_pos_);
+    DrawMouseCoordinates();
+
+    ci::gl::color(1, 1, 0);
+
+    DrawGraphAxes();
+    ci::gl::color(1, 1, 0);
+    mBatch->draw();
+
+    if (left_down_ && in_range_) {
+      particle_manager_.DrawMouseParticle(mouse_pos_);
+    }
+  } else {
+    ourShader.use();
+
+    //Reset matrices
+    model = glm::mat4(1.0f);
+    view = glm::mat4(1.0f);
+    projection = glm::mat4(1.0f);
+
+    projection = glm::perspective(glm::radians(camera.Zoom), ci::app::getWindowAspectRatio(), 0.1f, 100.0f); // create 3d perspective
+    view = camera.GetViewMatrix(); // Change to camera space
+
+    // rotate camera view
+    const float radius = 10.0f;
+    float camX = sin(0.5*ci::app::getElapsedSeconds()) * radius;
+    float camZ = cos(0.5* ci::app::getElapsedSeconds()) * radius;
+    view = view * glm::lookAt(glm::vec3(camX, 0.9, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+
+    //Send matrices to Shader
+    ourShader.setMat4("model", model);
+    ourShader.setMat4("view", view);
+    ourShader.setMat4("projection", projection);
+
+    glBindVertexArray(VAO2);
+    glDrawArrays(GL_LINES, 0, 6*3);
+
+    glBindVertexArray(0);
   }
 }
 
@@ -61,15 +116,19 @@ void FieldSimulator::update() {
 
 void FieldSimulator::button(size_t id) {
   if(id == 0) { // Draw Field Button
-    vertBatch->clear();
-    vertBatch = ci::gl::VertBatch::create(GL_LINES);
-    InitializeFieldVectors();
-    mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
-  } else if(id == 1) { // Clear Field Button
+    if(!toggle3d) {
+      vertBatch->clear();
+      vertBatch = ci::gl::VertBatch::create(GL_LINES);
+      InitializeFieldVectors();
+      mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+    }
+  } else if(id == 1 && !toggle3d) { // Clear Field Button
     ClearArrows();
   } else if(id == 2) { // Add Particle Button
-    particle_manager_.AddParticle(5,
-                                  glm::vec2(std::stod(x_pos_),std::stod(y_pos_)));
+    if(!toggle3d) {
+      particle_manager_.AddParticle(
+          5, glm::vec2(std::stod(x_pos_), std::stod(y_pos_)));
+    }
   } else if(id == 3) { // Clear Particles Button
     particle_manager_.ClearParticles();
   } else if(id == 4) { // Enter Pen Mode
@@ -85,16 +144,40 @@ void FieldSimulator::button(size_t id) {
     curve_handler_.CalculateCurveForces(i_component_, j_component_);
     total_work_ = curve_handler_.CalculateWork();
   } else if(id == 9) { // Graph button
-    curve_handler_.CreateGraph();
-    curve_handler_.CalculateGraphCoordinates(kScale, equation_);
-    if(!equation2_.empty()) {
+    if(!toggle3d) {
       curve_handler_.CreateGraph();
-      curve_handler_.CalculateGraphCoordinates(kScale, equation2_);
+      curve_handler_.CalculateGraphCoordinates(kScale, equation_);
+      if (!equation2_.empty()) {
+        curve_handler_.CreateGraph();
+        curve_handler_.CalculateGraphCoordinates(kScale, equation2_);
+      }
     }
   } else if(id == 10) { // Clear Graph button
     curve_handler_.ClearGraphs();
   } else if(id == 11) {
     curve_handler_.UndoGraph();
+  } else if(id == 12) {
+    toggle3d = !toggle3d;
+    if(toggle3d) {
+      glEnable(GL_DEPTH_TEST);
+
+      glGenVertexArrays(2, &VAO2);
+      glGenBuffers(2, &VBO2);
+
+      glBindVertexArray(VAO2);
+
+      glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(axisvertices), axisvertices,
+                   GL_STATIC_DRAW);
+
+      // position attribute
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                            (void*)0);
+      glEnableVertexAttribArray(0);
+
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindVertexArray(0);
+    }
   }
 }
 
@@ -118,6 +201,20 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
     mouse_pos_ = event.getPos();
     left_down_ = true;
   }
+
+
+  //asdfasdf
+  if(toggle3d) {
+    if (firstMouse) {
+      mousePos = event.getPos();
+      firstMouse = false;
+    }
+
+    float xoffset = event.getX() - mousePos.x;
+    float yoffset = mousePos.y - event.getY();
+    mousePos = event.getPos();
+    camera.ProcessMouseMovement(xoffset, yoffset);
+  }
 }
 
 void FieldSimulator::mouseUp(ci::app::MouseEvent event) {
@@ -140,6 +237,78 @@ void FieldSimulator::mouseDown(ci::app::MouseEvent event) {
   }
 
   particle_manager_.AddReturnParticle(event.getPos());
+}
+
+void FieldSimulator::mouseWheel(ci::app::MouseEvent event) {
+  camera.ProcessMouseScroll(event.getWheelIncrement());
+}
+
+void FieldSimulator::keyDown(ci::app::KeyEvent event) {
+  switch (event.getCode()) {
+    case ci::app::KeyEvent::KEY_SPACE: {
+      //float dynamic_arr[10 * 10 * 10+1];
+      std::vector<float> dynamic_vec;
+      //memcpy(&dynamic_vec[0], axisvertices, 66*sizeof(float));
+      for(int x=0; x < 36; x++) {
+        dynamic_vec.push_back(axisvertices[x]);
+      }
+
+      for (int x = -4; x < 5; x++) {
+        for (int y = -4; y < 5; y++) {
+          for (int z = -4; z < 5; z++) {
+            dynamic_vec.push_back(static_cast<float>(x));
+            dynamic_vec.push_back(static_cast<float>(y));
+            dynamic_vec.push_back(static_cast<float>(z));
+
+            glm::vec3 vel(1, 1, 1);
+            glm::vec3 scaled = 0.5f * vel;
+            dynamic_vec.push_back(static_cast<float>(x) + scaled.x);
+            dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
+            dynamic_vec.push_back(static_cast<float>(z) + scaled.z);
+          }
+        }
+      }
+
+      float dynamic_arr[dynamic_vec.size()];
+      std::copy(dynamic_vec.begin(), dynamic_vec.end(), dynamic_arr);
+      for(float i: dynamic_arr) {
+        std::cout << i << std::endl;
+      }
+
+      glGenVertexArrays(2, &VAO2);// Axis VAO & VBO
+      glGenBuffers(2, &VBO2);
+
+      glBindVertexArray(VAO2);
+
+      glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(dynamic_arr), dynamic_arr, GL_STATIC_DRAW);
+
+      //position attribute
+      glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+      glEnableVertexAttribArray(0);
+
+      glBindBuffer(GL_ARRAY_BUFFER, 0);
+      glBindVertexArray(0);
+
+      break;
+    }
+
+    case ci::app::KeyEvent::KEY_RIGHT:
+      camera.ProcessKeyboard(RIGHT, deltaTime);
+      break;
+
+    case ci::app::KeyEvent::KEY_LEFT:
+      camera.ProcessKeyboard(LEFT, deltaTime);
+      break;
+
+    case ci::app::KeyEvent::KEY_UP:
+      camera.ProcessKeyboard(FORWARD, deltaTime);
+      break;
+
+    case ci::app::KeyEvent::KEY_DOWN:
+      camera.ProcessKeyboard(BACKWARD, deltaTime);
+      break;
+  }
 }
 
 void FieldSimulator::ClearArrows() {
@@ -250,6 +419,7 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
   mParams->addParam("X Position", &x_pos_);
   mParams->addParam("Y Position", &y_pos_);
+  mParams->addParam("Z Position", &z_pos_);
   mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
 
   mParams->addSeparator("Canvas");
@@ -265,6 +435,9 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addButton("Graph", [ & ]() { button( 9); });
   mParams->addButton("Clear Graph", [ & ]() { button( 10); });
   mParams->addButton("Undo", [ & ]() { button( 11); });
+
+  mParams->addSeparator("3D");
+  mParams->addButton("Toggle 3D", [ & ]() { button( 12); });
   //mParams->addParam("Enter Equation", &equation);
 }
 

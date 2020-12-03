@@ -14,6 +14,7 @@
 #import "curve_handler.h"
 #include "particle_manager.h"
 #include "shader.h"
+#include "../core/camera.h"
 
 
 namespace vectorfield {
@@ -57,6 +58,9 @@ class FieldSimulator : public ci::app::App {
 
   void mouseDown(ci::app::MouseEvent event) override;
 
+  void keyDown(ci::app::KeyEvent event) override;
+
+  void mouseWheel(ci::app::MouseEvent event) override;
  private:
 
   const size_t kWindowSize = 700; // Size of the cinder window
@@ -111,6 +115,7 @@ class FieldSimulator : public ci::app::App {
   string j_component_; // Representation of j-component of the vector field that user provided
   string x_pos_;
   string y_pos_;
+  string z_pos_;
 
   glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
   double x_unit_; // Amount of pixels that a single x unit is
@@ -145,6 +150,30 @@ class FieldSimulator : public ci::app::App {
 
 
   //3D stuff
+  Shader ourShader = Shader("visualizer/shader.vs", "visualizer/shader.fs");
+  unsigned int VBO2, VAO2;
+  glm::mat4 model, view, projection;
+  //Axis stuff
+  float axisvertices[6*3] = {
+      0.0f, 5.0f, 0.0f,
+      0.0f, -5.0f, 0.0f,
+      5.0f, 0.0f, 0.0f,
+      -5.0f, 0.0f, 0.0f,
+      0.0f, 0.0f, 5.0f,
+      0.0f, 0.0f, -5.0f,
+  };
+  Camera camera = Camera(glm::vec3(0, 0, 13.0f));
+  bool firstMouse = true;
+
+  // timing
+  float deltaTime = 0.0f;	// time between current frame and last frame
+  float lastFrame = 0.0f;
+
+  glm::vec2 mousePos = glm::vec2(0, 0);
+
+  bool print = false;
+  bool toggle3d = true;
+
 
 };
 

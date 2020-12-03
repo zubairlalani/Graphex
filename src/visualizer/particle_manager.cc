@@ -44,6 +44,7 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
     }
   }
 
+
   for(size_t i = 0; i<return_particles_.size(); i++) {
     vec2 dist = vec2(return_particles_[i].GetXPosition() - kParticleShopPos.x,
                      return_particles_[i].GetYPosition() - kParticleShopPos.y);
@@ -55,8 +56,6 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
       return_particles_[i].UpdatePosition();
     }
   }
-
-
 }
 
 void ParticleManager::ClearParticles() {
