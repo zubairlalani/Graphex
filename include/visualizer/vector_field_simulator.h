@@ -15,7 +15,7 @@
 #include "particle_manager.h"
 #include "shader.h"
 #include "../core/camera.h"
-
+#include "graph_handler.h"
 
 namespace vectorfield {
 
@@ -129,6 +129,7 @@ class FieldSimulator : public ci::app::App {
   float image_scaling_factor_ = .1f; // Relative size of the arrows
 
   FunctionHandler function_handler_; // Computes all math involved
+  GraphHandler graph_handler_;
 
   glm::vec2 mouse_pos_;
   bool left_down_;
@@ -139,7 +140,7 @@ class FieldSimulator : public ci::app::App {
   ci::gl::VertBatchRef      tik_vert_batch;
 
   ci::gl::GlslProgRef       mGlslProg2;
-  ci::gl::BatchRef          mBatch2;
+  ci::gl::BatchRef arrow_batch_;
   ci::gl::VertBatchRef      vertBatch;
 
   CurveHandler curve_handler_;

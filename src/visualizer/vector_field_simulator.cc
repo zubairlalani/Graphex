@@ -5,23 +5,29 @@ namespace vectorfield {
 
 namespace visualizer {
 
-FieldSimulator::FieldSimulator() : curve_handler_(ci::Color::white()) {
+FieldSimulator::FieldSimulator()
+    : curve_handler_(ci::Color::white()),
+      graph_handler_(kWindowSize)  {
   ci::app::setWindowSize(kWindowSize, kWindowSize);
 }
 
 void FieldSimulator::setup() {
 
   SetupTweakBar();
-
-  CreateCoordinateSystem();
-
+  //CreateCoordinateSystem();
+  graph_handler_.CreateCoordinateSystem();
   InitializeBatch();
+
+  std::cout << graph_handler_.GetOrigin() << std::endl;
+  std::cout << graph_handler_.GetXUnit() << std::endl;
+  std::cout << graph_handler_.GetYUnit() << std::endl;
 
   // Default value is the origin if Add particle is clicked
   // but no x position or y position is specified
+
   std::ostringstream strx, stry;
-  strx << origin_.x;
-  stry << origin_.y;
+  strx << graph_handler_.GetOrigin().x;
+  stry << graph_handler_.GetOrigin().y;
   x_pos_ = strx.str();
   y_pos_ = stry.str();
 
@@ -73,7 +79,7 @@ void FieldSimulator::draw() {
   if(!toggle3d) {
     curve_handler_.Render();
     ci::gl::color(0, 191, 255);
-    mBatch2->draw();
+    arrow_batch_->draw();
 
     if(conservative) {
       ci::gl::drawString("Conservative: true", vec2(10, 85), ci::Color(1, 1, 0));
@@ -83,9 +89,8 @@ void FieldSimulator::draw() {
 
     ci::gl::color(1, 1, 0);
 
-    DrawGraphAxes();
-    ci::gl::color(1, 1, 0);
-    mBatch->draw();
+    //DrawGraphAxes();
+    graph_handler_.DrawGraphAxes();
 
     if (left_down_ && in_range_) {
       particle_manager_.DrawMouseParticle(mouse_pos_);
@@ -129,7 +134,7 @@ void FieldSimulator::button(size_t id) {
       vertBatch->clear();
       vertBatch = ci::gl::VertBatch::create(GL_LINES);
       InitializeFieldVectors();
-      mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+      arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
       conservative = function_handler_.IsConservative(i_component_, j_component_, kVectorScale, 1000);
     } else {
       //Initialize3DFieldVectors();
@@ -206,8 +211,8 @@ ci::Color FieldSimulator::GetNextColor() {
 void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
   if(!toggle3d) {
     mouse_pos_ = event.getPos();
-    double x_val = (mouse_pos_.x - origin_.x) / x_unit_;
-    double y_val = (origin_.y - mouse_pos_.y) / y_unit_;
+    double x_val = (mouse_pos_.x - graph_handler_.GetOrigin().x) / graph_handler_.GetXUnit();
+    double y_val = (graph_handler_.GetOrigin().y - mouse_pos_.y) / graph_handler_.GetYUnit();
     divergence_ = function_handler_.EvaluateDivergence(
         i_component_, j_component_, x_val, y_val);
     curl_ = function_handler_.Evaluate2DCurl(i_component_, j_component_, x_val,
@@ -223,8 +228,6 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
     left_down_ = true;
   }
 
-
-  //asdfasdf
   if(toggle3d) {
     if (firstMouse) {
       mousePos = event.getPos();
@@ -346,15 +349,14 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
 
 void FieldSimulator::ClearArrows() {
   vertBatch->clear();
-  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
-  //field_vectors_.clear();
+  arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
 }
 
 void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velocity) {
   ci::gl::color( 255, 255, 255 );
-  glm::vec2 start(origin_.x + x_unit_ * x, origin_.y - y_unit_ * y);
-  glm::vec2 end(origin_.x + x_unit_ * x + x_unit_ * image_scaling_factor_ * velocity.x,
-                origin_.y - y_unit_ * y - y_unit_* image_scaling_factor_ * velocity.y);
+  glm::vec2 start(graph_handler_.GetOrigin().x + graph_handler_.GetXUnit() * x, graph_handler_.GetOrigin().y - graph_handler_.GetYUnit() * y);
+  glm::vec2 end(graph_handler_.GetOrigin().x + graph_handler_.GetXUnit() * x + graph_handler_.GetXUnit() * image_scaling_factor_ * velocity.x,
+                graph_handler_.GetOrigin().y - graph_handler_.GetYUnit() * y - graph_handler_.GetYUnit()* image_scaling_factor_ * velocity.y);
   vec2 direction_vec(end.x - start.x, end.y - start.y);
 
   //Make the direction vector a unit vector
@@ -374,7 +376,7 @@ void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velo
   vertBatch->vertex(end);
   vertBatch->vertex(arrow_point_two);
 
-  DrawTikMarks();
+  //DrawTikMarks();
 }
 
 void FieldSimulator::DrawMouseCoordinates() {
@@ -422,6 +424,7 @@ void FieldSimulator::DrawGraphAxes() {
   ci::gl::drawLine(vec2(kGraphMargin, (kWindowSize)/2), //-kInputBoxHeight
                    vec2(kWindowSize-kGraphMargin, (kWindowSize)/2));
   DrawTikMarks();
+  mBatch->draw();
 }
 
 void FieldSimulator::InitializeFieldVectors() {
@@ -533,28 +536,28 @@ void FieldSimulator::DrawTikMarks() {
   size_t length = 5;
   tik_vert_batch = ci::gl::VertBatch::create(GL_LINES);
   for(int i=-kScale+1; i<kScale; i++) {
-    tik_vert_batch->vertex(vec2(origin_.x + i * x_unit_, origin_.y + length));
-    tik_vert_batch->vertex(vec2(origin_.x + i * x_unit_, origin_.y - length));
-    tik_vert_batch->vertex(vec2(origin_.x + length, origin_.y + i * y_unit_));
-    tik_vert_batch->vertex(vec2(origin_.x - length, origin_.y + i * y_unit_));
+    tik_vert_batch->vertex(vec2(graph_handler_.GetOrigin().x + i * graph_handler_.GetXUnit(), graph_handler_.GetOrigin().y + length));
+    tik_vert_batch->vertex(vec2(graph_handler_.GetOrigin().x + i * graph_handler_.GetXUnit(), graph_handler_.GetOrigin().y - length));
+    tik_vert_batch->vertex(vec2(graph_handler_.GetOrigin().x + length, graph_handler_.GetOrigin().y + i * graph_handler_.GetYUnit()));
+    tik_vert_batch->vertex(vec2(graph_handler_.GetOrigin().x - length, graph_handler_.GetOrigin().y + i * graph_handler_.GetYUnit()));
   }
 
 
 
-  vec2 end(kWindowSize - kGraphMargin, origin_.y);
-  vec2 start(kWindowSize - kGraphMargin - 10, origin_.y);
+  vec2 end(kWindowSize - kGraphMargin, graph_handler_.GetOrigin().y);
+  vec2 start(kWindowSize - kGraphMargin - 10, graph_handler_.GetOrigin().y);
   DrawArrow(start , end, 2*kArrowBase, kArrowHeight+10);
 
-  end = vec2(kGraphMargin, origin_.y);
-  start = vec2(kGraphMargin + 10, origin_.y);
+  end = vec2(kGraphMargin, graph_handler_.GetOrigin().y);
+  start = vec2(kGraphMargin + 10, graph_handler_.GetOrigin().y);
   DrawArrow(start , end, 2*kArrowBase, kArrowHeight+10);
 
-  end = vec2(origin_.x, kWindowSize-kGraphMargin);
-  start = vec2(origin_.x, kWindowSize-kGraphMargin-10);
+  end = vec2(graph_handler_.GetOrigin().x, kWindowSize-kGraphMargin);
+  start = vec2(graph_handler_.GetOrigin().x, kWindowSize-kGraphMargin-10);
   DrawArrow(start , end, 2*kArrowBase, kArrowHeight+10);
 
-  end = vec2(origin_.x, kGraphMargin);
-  start = vec2(origin_.x, kGraphMargin+10);
+  end = vec2(graph_handler_.GetOrigin().x, kGraphMargin);
+  start = vec2(graph_handler_.GetOrigin().x, kGraphMargin+10);
   DrawArrow(start , end, 2*kArrowBase, kArrowHeight+10);
 
   mBatch = ci::gl::Batch::create(*tik_vert_batch, mGlslProg);
@@ -581,13 +584,15 @@ void FieldSimulator::DrawArrow(const glm::vec2& start, const glm::vec2& end,
 
 void FieldSimulator::InitializeBatch() {
   //Used to draw all the arrows with on draw call
+  /*
   tik_vert_batch = ci::gl::VertBatch::create(GL_LINES);
   mGlslProg = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
-  mBatch = ci::gl::Batch::create(*tik_vert_batch, mGlslProg);
+  mBatch = ci::gl::Batch::create(*tik_vert_batch, mGlslProg);*/
+  graph_handler_.InitializeTikMarkBatch();
 
   vertBatch = ci::gl::VertBatch::create(GL_LINES);
   mGlslProg2 = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
-  mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+  arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
 }
 } // namespace visualizer
 } // namespace vectorfield
