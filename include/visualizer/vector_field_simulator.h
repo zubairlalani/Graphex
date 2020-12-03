@@ -16,6 +16,7 @@
 #include "shader.h"
 #include "../core/camera.h"
 #include "graph_handler.h"
+#include "cinder/camera.h"
 
 namespace vectorfield {
 
@@ -149,12 +150,12 @@ class FieldSimulator : public ci::app::App {
   glm::mat4 model, view, projection;
   //Axis stuff
   std::vector<float> axisvertices = {
-      0.0f, 5.0f, 0.0f,
-      0.0f, -5.0f, 0.0f,
-      5.0f, 0.0f, 0.0f,
-      -5.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 5.0f,
-      0.0f, 0.0f, -5.0f
+      0.0f, 5.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+      0.0f, -5.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+      5.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+      -5.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+      0.0f, 0.0f, 5.0f, 1.0f, 1.0f, 0.0f,
+      0.0f, 0.0f, -5.0f, 1.0f, 1.0f, 0.0f
   };
 
   Camera camera = Camera(glm::vec3(0, 0, 13.0f));
@@ -164,7 +165,10 @@ class FieldSimulator : public ci::app::App {
 
   bool toggle3d = false;
 
-  size_t line_amnt = 18;
+  size_t line_amnt;
+
+  ci::Color arrow_color_ = ci::Color(0, 1, 6);
+
 };
 
 } // namespace visualizer

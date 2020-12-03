@@ -1,6 +1,8 @@
 #include "visualizer/shader.h"
 namespace vectorfield {
 Shader::Shader(const char *vertexPath, const char *fragmentPath) {
+  // Source: https://learnopengl.com/Getting-started/Shaders
+
   // 1. retrieve the vertex/fragment source code from filePath
   std::string vertexCode;
   std::string fragmentCode;

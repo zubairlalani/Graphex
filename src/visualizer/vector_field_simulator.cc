@@ -28,6 +28,8 @@ void FieldSimulator::setup() {
   y_pos_ = stry.str();
 
   InitializeBuffers(axisvertices);
+
+  line_amnt = axisvertices.size();
 }
 
 void FieldSimulator::draw() {
@@ -42,13 +44,13 @@ void FieldSimulator::draw() {
       vec2(kWindowSize / 2 - 5 * field_equation.length() / 2, 10),
       ci::Color(1, 1, 0));
   DrawFPS();
-  DrawMouseCoordinates();
 
   if(!toggle3d) {
+    DrawMouseCoordinates();
     DrawCalculations();
     particle_manager_.DrawParticles();
     curve_handler_.Render();
-    ci::gl::color(0, 191, 255);
+    ci::gl::color(arrow_color_);
     arrow_batch_->draw();
 
     if(conservative) {
@@ -70,7 +72,7 @@ void FieldSimulator::draw() {
     CalculateMVPMatrix();
 
     glBindVertexArray(VAO2);
-    glDrawArrays(GL_LINES, 0, line_amnt); // arrow vertices + axis vertices
+    glDrawArrays(GL_LINES, 0, line_amnt); // line_amnt = arrow vertices + axis vertices
     glBindVertexArray(0); // unbind
   }
 }
@@ -164,7 +166,7 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
     curve_handler_.ApplyStroke(event.getPos());
   }
 
-  if(toggle3d) {
+  if(toggle3d && event.isRightDown()) {
     if (firstMouse) {
       mousePos = event.getPos();
       firstMouse = false;
@@ -220,7 +222,7 @@ void FieldSimulator::ClearArrows() {
 void FieldSimulator::Initialize3DArrowVertices() {
   std::vector<float> dynamic_vec;
 
-  for(int x=0; x < 18; x++) {
+  for(int x=0; x < axisvertices.size(); x++) {
     dynamic_vec.push_back(axisvertices[x]);
   }
 
@@ -230,16 +232,24 @@ void FieldSimulator::Initialize3DArrowVertices() {
         dynamic_vec.push_back(static_cast<float>(x));
         dynamic_vec.push_back(static_cast<float>(z));
         dynamic_vec.push_back(static_cast<float>(y)); // y - axis is the upward direction, so to make it the cartesian coordinate system switch y and z
+        dynamic_vec.push_back(arrow_color_.r);
+        dynamic_vec.push_back(arrow_color_.g);
+        dynamic_vec.push_back(arrow_color_.b);
+
         vec3 vel = function_handler_.Evaluate3DFunction(i_component_, j_component_, k_component_, x, y, z);
         glm::vec3 scaled = image_scaling_factor_ * vel;
         dynamic_vec.push_back(static_cast<float>(x) + scaled.x);
         dynamic_vec.push_back(static_cast<float>(z) + scaled.z);
         dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
+        dynamic_vec.push_back(arrow_color_.r);
+        dynamic_vec.push_back(arrow_color_.g);
+        dynamic_vec.push_back(arrow_color_.b);
       }
     }
   }
 
   line_amnt = dynamic_vec.size();
+  std::cout << line_amnt << std::endl;
   InitializeBuffers(dynamic_vec);
 }
 
@@ -251,7 +261,7 @@ void FieldSimulator::CalculateMVPMatrix() {
   view = glm::mat4(1.0f);
   projection = glm::mat4(1.0f);
 
-  projection = glm::perspective(glm::radians(camera.Zoom), ci::app::getWindowAspectRatio(), 0.1f, 100.0f); // create 3d perspective
+  projection = glm::perspective(glm::radians(camera.zoom_), ci::app::getWindowAspectRatio(), 0.1f, 100.0f); // create 3d perspective
   view = camera.GetViewMatrix(); // Change to camera space
 
   // rotate camera view
@@ -306,10 +316,8 @@ void FieldSimulator::DrawCalculations() {
   std::ostringstream divstr;
 
   divstr << divergence_;
-
   ci::gl::drawString("Divergence: " + divstr.str(),
                      vec2(10, 40), ci::Color(1, 1, 0));
-
 
   std::ostringstream curlstr;
   curlstr << curl_;
@@ -317,9 +325,7 @@ void FieldSimulator::DrawCalculations() {
                      vec2(10, 55), ci::Color(1, 1, 0));
 
   std::ostringstream workstr;
-
   workstr << total_work_;
-
   ci::gl::drawString("Approx Work: " + workstr.str(),
                      vec2(10, 70), ci::Color(1, 1, 0));
 }
@@ -403,12 +409,11 @@ void FieldSimulator::InitializeBuffers(const std::vector<float>& vertices) {
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
   //position attribute
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  /*
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);*/
+  glEnableVertexAttribArray(1);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
