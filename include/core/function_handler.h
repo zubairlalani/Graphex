@@ -7,11 +7,14 @@
 namespace vectorfield {
 
 using glm::vec2;
+using glm::vec3;
 using std::string;
 
 class FunctionHandler {
  public:
   vec2 EvaluateFunction(const string& i_comp, const string& j_comp, double x_val, double y_val);
+
+  vec3 Evaluate3DFunction(const string& i_comp, const string& j_comp, const string& k_comp, double x_val, double y_val, double z_val);
 
   double SolveEquation(double x, const std::string& equation);
 
@@ -37,7 +40,6 @@ class FunctionHandler {
   exprtk::expression<double> j_expr_3; // Expression that user provided
   exprtk::symbol_table<double> symbol_table3_;
   exprtk::parser<double> parser3_;
-
 
 };
 

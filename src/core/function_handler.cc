@@ -18,6 +18,30 @@ vec2 FunctionHandler::EvaluateFunction(const string& i_component, const string& 
   return vec2(i_expr_.value(), j_expr_.value());
 }
 
+vec3 FunctionHandler::Evaluate3DFunction(const string& i_comp, const string& j_comp, const string& k_comp,
+                                         double x_val, double y_val, double z_val) {
+  exprtk::symbol_table<double> symbol_table;
+  symbol_table.add_variable("x", x_val);
+  symbol_table.add_variable("y", y_val);
+  symbol_table.add_variable("z", z_val);
+  symbol_table.add_constants();
+
+  exprtk::expression<double> i_expr;
+  exprtk::expression<double> j_expr;
+  exprtk::expression<double> k_expr;
+
+
+  i_expr.register_symbol_table(symbol_table);
+  j_expr.register_symbol_table(symbol_table);
+  k_expr.register_symbol_table(symbol_table);
+
+  parser_.compile(i_comp, i_expr);
+  parser_.compile(j_comp, j_expr);
+  parser_.compile(k_comp, k_expr);
+
+  return vec3(i_expr.value(), j_expr.value(), k_expr.value());
+}
+
 double FunctionHandler::SolveEquation(double x, const std::string& equation) {
   exprtk::symbol_table<double> table;
   exprtk::expression<double> equation_expr_;

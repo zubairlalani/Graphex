@@ -96,6 +96,8 @@ class FieldSimulator : public ci::app::App {
 
   void InitializeFieldVectors();
 
+  void Initialize3DFieldVectors();
+
   void SetupTweakBar();
 
   void CreateCoordinateSystem();
@@ -113,9 +115,10 @@ class FieldSimulator : public ci::app::App {
 
   string i_component_; // Representation of i-component of the vector field that user provided
   string j_component_; // Representation of j-component of the vector field that user provided
+  string k_component_;
+
   string x_pos_;
   string y_pos_;
-  string z_pos_;
 
   glm::vec2 origin_; // Window coordinates of position (0, 0) of the graph axes
   double x_unit_; // Amount of pixels that a single x unit is
@@ -174,6 +177,7 @@ class FieldSimulator : public ci::app::App {
   bool print = false;
   bool toggle3d = true;
 
+  size_t line_amnt = 18;
 
 };
 

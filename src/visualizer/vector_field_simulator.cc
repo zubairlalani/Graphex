@@ -58,7 +58,7 @@ void FieldSimulator::draw() {
   //----------------------------------------------------------------------
   mParams->draw();
   std::string field_equation =
-      "F = (" + i_component_ + ")i + (" + j_component_ + ")j";
+      "F = (" + i_component_ + ")i + (" + j_component_ + ")j + ("+k_component_ +")k";
   ci::gl::drawString(
       field_equation,  // Draw User Inputted Functions
       vec2(kWindowSize / 2 - 5 * field_equation.length() / 2, 10),
@@ -104,7 +104,7 @@ void FieldSimulator::draw() {
     ourShader.setMat4("projection", projection);
 
     glBindVertexArray(VAO2);
-    glDrawArrays(GL_LINES, 0, 6*3);
+    glDrawArrays(GL_LINES, 0, line_amnt); // arrow vertices + axis vertices
 
     glBindVertexArray(0);
   }
@@ -121,6 +121,8 @@ void FieldSimulator::button(size_t id) {
       vertBatch = ci::gl::VertBatch::create(GL_LINES);
       InitializeFieldVectors();
       mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+    } else {
+      Initialize3DFieldVectors();
     }
   } else if(id == 1 && !toggle3d) { // Clear Field Button
     ClearArrows();
@@ -249,7 +251,7 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
       //float dynamic_arr[10 * 10 * 10+1];
       std::vector<float> dynamic_vec;
       //memcpy(&dynamic_vec[0], axisvertices, 66*sizeof(float));
-      for(int x=0; x < 36; x++) {
+      for(int x=0; x < 18; x++) {
         dynamic_vec.push_back(axisvertices[x]);
       }
 
@@ -257,19 +259,21 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
         for (int y = -4; y < 5; y++) {
           for (int z = -4; z < 5; z++) {
             dynamic_vec.push_back(static_cast<float>(x));
-            dynamic_vec.push_back(static_cast<float>(y));
             dynamic_vec.push_back(static_cast<float>(z));
+            dynamic_vec.push_back(static_cast<float>(y)); // y - axis is the upward direction, so to make it the cartesian coordinate system switch y and z
 
-            glm::vec3 vel(1, 1, 1);
-            glm::vec3 scaled = 0.5f * vel;
+            //glm::vec3 vel(x, y, z);
+            vec3 vel = function_handler_.Evaluate3DFunction(i_component_, j_component_, k_component_, x, y, z);
+            glm::vec3 scaled = image_scaling_factor_ * vel;
             dynamic_vec.push_back(static_cast<float>(x) + scaled.x);
-            dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
             dynamic_vec.push_back(static_cast<float>(z) + scaled.z);
+            dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
           }
         }
       }
 
       float dynamic_arr[dynamic_vec.size()];
+      line_amnt = dynamic_vec.size();
       std::copy(dynamic_vec.begin(), dynamic_vec.end(), dynamic_arr);
       for(float i: dynamic_arr) {
         std::cout << i << std::endl;
@@ -314,7 +318,7 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
 void FieldSimulator::ClearArrows() {
   vertBatch->clear();
   mBatch2 = ci::gl::Batch::create(*vertBatch, mGlslProg2);
-  field_vectors_.clear();
+  //field_vectors_.clear();
 }
 
 void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velocity) {
@@ -395,10 +399,57 @@ void FieldSimulator::InitializeFieldVectors() {
       double valx = (double) x;
       double valy = (double) y;
       auto velocity = function_handler_.EvaluateFunction(i_component_, j_component_, valx, valy);
-      field_vectors_[{x, y}] = velocity;
+      //field_vectors_[{x, y}] = velocity;
       InitializeArrowVertices(x, y, velocity);
     }
   }
+}
+
+void FieldSimulator::Initialize3DFieldVectors() {
+  std::vector<float> dynamic_vec;
+  //memcpy(&dynamic_vec[0], axisvertices, 66*sizeof(float));
+  for(int x=0; x < 36; x++) {
+    dynamic_vec.push_back(axisvertices[x]);
+  }
+
+  for (int x = -4; x < 5; x++) {
+    for (int y = -4; y < 5; y++) {
+      for (int z = -4; z < 5; z++) {
+        dynamic_vec.push_back(static_cast<float>(x));
+        dynamic_vec.push_back(static_cast<float>(y));
+        dynamic_vec.push_back(static_cast<float>(z));
+
+        glm::vec3 vel(x, y, z);
+        glm::vec3 scaled = 0.5f * vel;
+        dynamic_vec.push_back(static_cast<float>(x) + scaled.x);
+        dynamic_vec.push_back(static_cast<float>(y) + scaled.y);
+        dynamic_vec.push_back(static_cast<float>(z) + scaled.z);
+      }
+    }
+  }
+
+  line_amnt = dynamic_vec.size();
+
+  float dynamic_arr[dynamic_vec.size()];
+  std::copy(dynamic_vec.begin(), dynamic_vec.end(), dynamic_arr);
+  for(float i: dynamic_arr) {
+    std::cout << i << std::endl;
+  }
+
+  glGenVertexArrays(2, &VAO2);// Axis VAO & VBO
+  glGenBuffers(2, &VBO2);
+
+  glBindVertexArray(VAO2);
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(dynamic_arr), dynamic_arr, GL_STATIC_DRAW);
+
+  //position attribute
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 }
 
 void FieldSimulator::SetupTweakBar() {
@@ -413,13 +464,13 @@ void FieldSimulator::SetupTweakBar() {
   mParams->addButton("Clear", [ & ]() { button( 1 ); });
   mParams->addParam( "Function i-Comp", &i_component_ );
   mParams->addParam( "Function j-Comp", &j_component_ );
+  mParams->addParam( "Function k-Comp", &k_component_ );
   mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
 
   mParams->addSeparator("Particle Params");
   mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
   mParams->addParam("X Position", &x_pos_);
   mParams->addParam("Y Position", &y_pos_);
-  mParams->addParam("Z Position", &z_pos_);
   mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
 
   mParams->addSeparator("Canvas");
