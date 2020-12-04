@@ -80,23 +80,11 @@ double CurveHandler::CalculateWork() {
                         30;  // Dist from origin then divide by the unit scale
         vec2 delta_disp = vec2(x_val2 - x_val, y_val2 - y_val);
         double work_increment = glm::dot(forces_[point_index], delta_disp);
-        // std::cout << "DELTA FORCE: " << forces_[point_index] << "DELTA DISP: " << delta_disp << "WORK: " << work_increment << std::endl;
         total_work += work_increment;
       }
-
-      //Using Fundamental Theorem of Line Integrals
-      double endx = (stroke.back().x - 350) /30;
-      double endy = (350 - stroke.back().y) / 30;
-      double begx = (stroke.front().x - 350) / 30;
-      double begy = (350 - stroke.front().y)/30;
-      double endval = .5 * endx * endx + .5 * endy * endy;
-      double begval = .5 * begx * begx + .5 * begy * begy;
-      double diff = endval - begval;
-      std::cout << "WORK BY FTLT for the Field <x, y>: " << endval << " " << begval << " " << diff << std::endl;
     }
   }
 
-  std::cout << "TOTAL WORK: " << total_work << std::endl;
   return total_work;
 }
 

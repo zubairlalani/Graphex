@@ -92,7 +92,7 @@ double FunctionHandler::Evaluate2DCurl(const string& i_comp, const string& j_com
   return dQdx - dPdy;
 }
 
-bool FunctionHandler::IsConservative(const string& i_comp, const string& j_comp, int scale,size_t accuracy_lvl) {
+bool FunctionHandler::IsConservative(const string& i_comp, const string& j_comp, int scale, size_t accuracy_lvl) {
   double epsilon = 0.001;
   srand(static_cast<unsigned>(time(0)));
   float random_x_val;

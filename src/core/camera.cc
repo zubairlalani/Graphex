@@ -47,6 +47,7 @@ namespace vectorfield {
   void Camera::updateCameraVectors() {
     // calculate the new Front vector
     glm::vec3 front;
+    //Basically spherical coordinates
     front.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
     front.y = sin(glm::radians(pitch_));
     front.z = sin(glm::radians(yaw_)) * cos(glm::radians(pitch_));

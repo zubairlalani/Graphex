@@ -53,8 +53,16 @@ class FieldSimulator : public ci::app::App {
    */
   void setup() override;
 
+  /**
+   * Takes care of events that occur when the mouse is dragged
+   * @param event - mouse event
+   */
   void mouseDrag(ci::app::MouseEvent event) override;
 
+  /**
+   * Events that occur when mouse is released
+   * @param event - mouse event
+   */
   void mouseUp(ci::app::MouseEvent event) override;
 
   void mouseDown(ci::app::MouseEvent event) override;
@@ -67,6 +75,7 @@ class FieldSimulator : public ci::app::App {
 
   const size_t kWindowSize = 700; // Size of the cinder window
   const int kScale = 10; // Determines how many units an axis goes up to
+  int k3DScale = 5;
   const int kVectorScale = 10; // Number of vectors that will be drawn
   const float kArrowHeight = 3.0f; // Height of arrowhead
   const float kArrowBase = 10.0f; // Distance that the base of the arrow spans
@@ -110,7 +119,7 @@ class FieldSimulator : public ci::app::App {
 
   size_t color_index_ = 0; // Determines where in pen color array we are in
 
-  ci::params::InterfaceGlRef mParams; // Used for user input
+  ci::params::InterfaceGlRef params_gui_; // Used for user input
 
   string i_component_; // i-component of the vector field that user provided
   string j_component_; // j-component of the vector field that user provided
@@ -129,7 +138,7 @@ class FieldSimulator : public ci::app::App {
   bool left_down_;
   bool in_range_;
 
-  ci::gl::GlslProgRef       mGlslProg2;
+  ci::gl::GlslProgRef glsl_prog_;
   ci::gl::BatchRef arrow_batch_;
   ci::gl::VertBatchRef      vertBatch;
 
@@ -145,9 +154,10 @@ class FieldSimulator : public ci::app::App {
   std::string equation2_; // Equation that the user inputs for graph 2
 
   //3D stuff
-  Shader ourShader = Shader("visualizer/shader.vs", "visualizer/shader.fs");
-  unsigned int VBO2, VAO2;
+  Shader shader_ = Shader("visualizer/shader.vs", "visualizer/shader.fs");
+  unsigned int vbo_, vao_;
   glm::mat4 model, view, projection;
+
   //Axis stuff
   std::vector<float> axisvertices = {
       0.0f, 5.0f, 0.0f, 1.0f, 1.0f, 0.0f,
@@ -159,15 +169,16 @@ class FieldSimulator : public ci::app::App {
   };
 
   Camera camera = Camera(glm::vec3(0, 0, 13.0f));
-  bool firstMouse = true;
+  bool first_mouse_ = true;
 
   glm::vec2 mousePos = glm::vec2(0, 0);
 
   bool toggle3d = false;
 
-  size_t line_amnt;
+  size_t vertex_amnt_;
 
   ci::Color arrow_color_ = ci::Color(0, 1, 6);
+  ci::Color axes_color_ = ci::Color(1, 1, 0);
 
 };
 

@@ -15,7 +15,7 @@ void FieldSimulator::setup() {
 
   SetupTweakBar();
 
-  graph_handler_.CreateCoordinateSystem();
+  graph_handler_.CreateCoordinateSystem(); // Creates a an origin positions and distance of 1 x/y unit based on size of axes and window
 
   InitializeBatch();
 
@@ -29,29 +29,33 @@ void FieldSimulator::setup() {
 
   InitializeBuffers(axisvertices);
 
-  line_amnt = axisvertices.size();
+  // Initially the amount of vertices that are drawn
+  // is just the amount of vertices to draw the axes
+  vertex_amnt_ = axisvertices.size();
 }
 
 void FieldSimulator::draw() {
   ci::gl::clear(ci::Color(ci::Color::black()), true);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clears color and depth buffers each frame
 
-  mParams->draw();
+  params_gui_->draw(); // Draws GUI
+
   std::string field_equation =
       "F = (" + i_component_ + ")i + (" + j_component_ + ")j + ("+k_component_ +")k";
   ci::gl::drawString(
       field_equation,  // Draw User Inputted Functions
       vec2(kWindowSize / 2 - 5 * field_equation.length() / 2, 10),
-      ci::Color(1, 1, 0));
+      ci::Color(axes_color_));
   DrawFPS();
 
-  if(!toggle3d) {
+  if(!toggle3d) { // 2D drawing
     DrawMouseCoordinates();
     DrawCalculations();
     particle_manager_.DrawParticles();
-    curve_handler_.Render();
+    curve_handler_.Render(); // For pen drawings & 2D graphing
+
     ci::gl::color(arrow_color_);
-    arrow_batch_->draw();
+    arrow_batch_->draw(); // Draws all the arrows at the same time
 
     if(conservative) {
       ci::gl::drawString("Conservative: true", vec2(10, 85), ci::Color(1, 1, 0));
@@ -59,20 +63,21 @@ void FieldSimulator::draw() {
       ci::gl::drawString("Conservative: false", vec2(10, 85),ci::Color(1, 1, 0));
     }
 
-    ci::gl::color(1, 1, 0);
+    ci::gl::color(axes_color_);
 
     //DrawGraphAxes();
     graph_handler_.DrawGraphAxes();
 
-    if (left_down_ && in_range_) {
+    if (left_down_ && in_range_) { // Draws the particle that has been picked up from the particle "shop"
       particle_manager_.DrawMouseParticle(mouse_pos_);
     }
-  } else {
+  } else { // 3D drawing
 
-    CalculateMVPMatrix();
+    CalculateMVPMatrix(); // In order to convert coordinates from model space to screen space
 
-    glBindVertexArray(VAO2);
-    glDrawArrays(GL_LINES, 0, line_amnt); // line_amnt = arrow vertices + axis vertices
+    glBindVertexArray(vao_);
+    glDrawArrays(GL_LINES, 0,
+                 vertex_amnt_); // vertex_amnt_ = arrow vertices + axis vertices
     glBindVertexArray(0); // unbind
   }
 }
@@ -89,14 +94,14 @@ void FieldSimulator::button(size_t id) {
       vertBatch->clear();
       vertBatch = ci::gl::VertBatch::create(GL_LINES);
       InitializeFieldVectors();
-      arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+      arrow_batch_ = ci::gl::Batch::create(*vertBatch, glsl_prog_);
       conservative = function_handler_.IsConservative(
           i_component_, j_component_, kVectorScale, 1000);
     }
   } else if(id == 1) { // Clear Field Button
     if(toggle3d) {
       InitializeBuffers(axisvertices);
-      line_amnt = 18;
+      vertex_amnt_ = axisvertices.size();
     } else {
       ClearArrows();
     }
@@ -136,7 +141,7 @@ void FieldSimulator::button(size_t id) {
     toggle3d = !toggle3d;
     if(toggle3d) {
       InitializeBuffers(axisvertices);
-      line_amnt = 18;
+      vertex_amnt_ = axisvertices.size();
     }
   }
 }
@@ -167,9 +172,9 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
   }
 
   if(toggle3d && event.isRightDown()) {
-    if (firstMouse) {
+    if (first_mouse_) {
       mousePos = event.getPos();
-      firstMouse = false;
+      first_mouse_ = false;
     }
 
     float xoffset = event.getX() - mousePos.x;
@@ -216,7 +221,7 @@ void FieldSimulator::keyDown(ci::app::KeyEvent event) {
 
 void FieldSimulator::ClearArrows() {
   vertBatch->clear();
-  arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+  arrow_batch_ = ci::gl::Batch::create(*vertBatch, glsl_prog_);
 }
 
 void FieldSimulator::Initialize3DArrowVertices() {
@@ -226,9 +231,9 @@ void FieldSimulator::Initialize3DArrowVertices() {
     dynamic_vec.push_back(axisvertices[x]);
   }
 
-  for (int x = -4; x < 5; x++) {
-    for (int y = -4; y < 5; y++) {
-      for (int z = -4; z < 5; z++) {
+  for (int x = -k3DScale+1; x < k3DScale; x++) {
+    for (int y = -k3DScale+1; y < k3DScale; y++) {
+      for (int z = -k3DScale+1; z < k3DScale; z++) {
         dynamic_vec.push_back(static_cast<float>(x));
         dynamic_vec.push_back(static_cast<float>(z));
         dynamic_vec.push_back(static_cast<float>(y)); // y - axis is the upward direction, so to make it the cartesian coordinate system switch y and z
@@ -248,13 +253,13 @@ void FieldSimulator::Initialize3DArrowVertices() {
     }
   }
 
-  line_amnt = dynamic_vec.size();
-  std::cout << line_amnt << std::endl;
+  vertex_amnt_ = dynamic_vec.size();
+  std::cout << vertex_amnt_ << std::endl;
   InitializeBuffers(dynamic_vec);
 }
 
 void FieldSimulator::CalculateMVPMatrix() {
-  ourShader.use();
+  shader_.use();
 
   //Reset matrices
   model = glm::mat4(1.0f);
@@ -272,17 +277,14 @@ void FieldSimulator::CalculateMVPMatrix() {
 
   ci::mat4 mvp = projection * view * model;
 
-  ourShader.setMat4("mvp", mvp); //Send mvp matrix to shader
+  shader_.setMat4("mvp", mvp); //Send mvp matrix to shader
 }
 
 void FieldSimulator::InitializeArrowVertices(int x, int y, const glm::vec2& velocity) {
-  ci::gl::color( 255, 255, 255 );
-  //glm::vec2 start(graph_handler_.GetOrigin().x + graph_handler_.GetXUnit() * x, graph_handler_.GetOrigin().y - graph_handler_.GetYUnit() * y);
   vec2 start(graph_handler_.ConvertCartesianToScreen(vec2(x, y)));
 
   glm::vec2 end(graph_handler_.GetOrigin().x + graph_handler_.GetXUnit() * x + graph_handler_.GetXUnit() * image_scaling_factor_ * velocity.x,
                 graph_handler_.GetOrigin().y - graph_handler_.GetYUnit() * y - graph_handler_.GetYUnit()* image_scaling_factor_ * velocity.y);
-  //vec2 end(graph_handler_.ConvertCartesianToScreen(vec2(start.x + image_scaling_factor_ * velocity.x, start.y + image_scaling_factor_ * velocity.y)));
 
   vec2 direction_vec(end.x - start.x, end.y - start.y);
 
@@ -349,42 +351,42 @@ void FieldSimulator::InitializeFieldVectors() {
 }
 
 void FieldSimulator::SetupTweakBar() {
-  mParams = ci::params::InterfaceGl::create(
+  params_gui_ = ci::params::InterfaceGl::create(
       getWindow(), "App parameters",
       getWindow()->toPixels( ci::ivec2( 300, 200 ) )
   );
 
-  mParams->addSeparator("Field Params");
-  mParams->setPosition(glm::vec2(50, 500));
-  mParams->addButton("Draw", [ & ]() { button( 0 ); });
-  mParams->addButton("Clear", [ & ]() { button( 1 ); });
-  mParams->addParam( "Function i-Comp", &i_component_ );
-  mParams->addParam( "Function j-Comp", &j_component_ );
-  mParams->addParam( "Function k-Comp", &k_component_ );
-  mParams->addParam( "Arrow Scale", &image_scaling_factor_ );
+  params_gui_->addSeparator("Field Params");
+  params_gui_->setPosition(glm::vec2(50, 500));
+  params_gui_->addButton("Draw", [ & ]() { button( 0 ); });
+  params_gui_->addButton("Clear", [ & ]() { button( 1 ); });
+  params_gui_->addParam( "Function i-Comp", &i_component_ );
+  params_gui_->addParam( "Function j-Comp", &j_component_ );
+  params_gui_->addParam( "Function k-Comp", &k_component_ );
+  params_gui_->addParam( "Arrow Scale", &image_scaling_factor_ );
 
-  mParams->addSeparator("Particle Params");
-  mParams->addButton("Add Particle", [ & ]() { button( 2 ); });
-  mParams->addParam("X Position", &x_pos_);
-  mParams->addParam("Y Position", &y_pos_);
-  mParams->addButton("Clear Particles", [ & ]() { button( 3 ); });
+  params_gui_->addSeparator("Particle Params");
+  params_gui_->addButton("Add Particle", [ & ]() { button( 2 ); });
+  params_gui_->addParam("X Position", &x_pos_);
+  params_gui_->addParam("Y Position", &y_pos_);
+  params_gui_->addButton("Clear Particles", [ & ]() { button( 3 ); });
 
-  mParams->addSeparator("Canvas");
-  mParams->addButton("Enter Pen Mode", [ & ]() { button( 4 ); });
-  mParams->addButton("Exit Pen Mode", [ & ]() { button( 5 ); });
-  mParams->addButton("Erase", [ & ]() { button( 6 ); });
-  mParams->addButton("Change Pen Color", [ & ]() { button( 7 ); });
-  mParams->addButton("Calculate Work", [ & ]() { button( 8 ); });
+  params_gui_->addSeparator("Canvas");
+  params_gui_->addButton("Enter Pen Mode", [ & ]() { button( 4 ); });
+  params_gui_->addButton("Exit Pen Mode", [ & ]() { button( 5 ); });
+  params_gui_->addButton("Erase", [ & ]() { button( 6 ); });
+  params_gui_->addButton("Change Pen Color", [ & ]() { button( 7 ); });
+  params_gui_->addButton("Calculate Work", [ & ]() { button( 8 ); });
 
-  mParams->addSeparator("Grapher");
-  mParams->addParam("y = ", &equation_);
-  mParams->addParam("y2 = ", &equation2_);
-  mParams->addButton("Graph", [ & ]() { button( 9); });
-  mParams->addButton("Clear Graph", [ & ]() { button( 10); });
-  mParams->addButton("Undo", [ & ]() { button( 11); });
+  params_gui_->addSeparator("Grapher");
+  params_gui_->addParam("y = ", &equation_);
+  params_gui_->addParam("y2 = ", &equation2_);
+  params_gui_->addButton("Graph", [ & ]() { button( 9); });
+  params_gui_->addButton("Clear Graph", [ & ]() { button( 10); });
+  params_gui_->addButton("Undo", [ & ]() { button( 11); });
 
-  mParams->addSeparator("3D");
-  mParams->addButton("Toggle 3D", [ & ]() { button( 12); });
+  params_gui_->addSeparator("3D");
+  params_gui_->addButton("Toggle 3D", [ & ]() { button( 12); });
 }
 
 void FieldSimulator::InitializeBatch() {
@@ -392,8 +394,8 @@ void FieldSimulator::InitializeBatch() {
   graph_handler_.InitializeTikMarkBatch();
 
   vertBatch = ci::gl::VertBatch::create(GL_LINES);
-  mGlslProg2 = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
-  arrow_batch_ = ci::gl::Batch::create(*vertBatch, mGlslProg2);
+  glsl_prog_ = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
+  arrow_batch_ = ci::gl::Batch::create(*vertBatch, glsl_prog_);
 }
 
 void FieldSimulator::InitializeBuffers(const std::vector<float>& vertices) {
@@ -401,11 +403,12 @@ void FieldSimulator::InitializeBuffers(const std::vector<float>& vertices) {
 
   glEnable(GL_DEPTH_TEST);
 
-  glGenVertexArrays(1, &VAO2);
-  glGenBuffers(1, &VBO2);
-  glBindVertexArray(VAO2);
+  glGenVertexArrays(1, &vao_);
+  glGenBuffers(1, &vbo_);
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+  glBindVertexArray(vao_);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+
   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
   //position attribute
