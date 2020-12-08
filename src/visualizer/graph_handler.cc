@@ -4,9 +4,9 @@ namespace vectorfield {
 GraphHandler::GraphHandler(size_t window_size) : window_size_(window_size) {}
 
 void GraphHandler::InitializeTikMarkBatch() {
-  tik_vert_batch = ci::gl::VertBatch::create(GL_LINES);
-  mGlslProg = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
-  mBatch = ci::gl::Batch::create(*tik_vert_batch, mGlslProg);
+  tik_vert_batch_ = ci::gl::VertBatch::create(GL_LINES);
+  stock_shader_ = ci::gl::getStockShader( ci::gl::ShaderDef().color() );
+  batch_ = ci::gl::Batch::create(*tik_vert_batch_, stock_shader_);
 }
 
 void GraphHandler::CreateCoordinateSystem() {
@@ -17,25 +17,28 @@ void GraphHandler::CreateCoordinateSystem() {
 
 void GraphHandler::DrawGraphAxes() {
   ci::gl::color(1, 1, 0);
+
+  //Draw axes
   ci::gl::drawLine(vec2(window_size_/2, kGraphMargin),
                    vec2(window_size_/2, window_size_ - kGraphMargin ));
   ci::gl::drawLine(vec2(kGraphMargin, (window_size_)/2), //-kInputBoxHeight
                    vec2(window_size_-kGraphMargin, (window_size_)/2));
+  //Draw tik marks
   SetupTikMarkVertices();
-  mBatch->draw();
+  batch_->draw();
 }
 
 void GraphHandler::SetupTikMarkVertices() {
   size_t length = 5;
-  tik_vert_batch = ci::gl::VertBatch::create(GL_LINES);
+  tik_vert_batch_ = ci::gl::VertBatch::create(GL_LINES);
   for(int i=-kScale+1; i<kScale; i++) {
-    tik_vert_batch->vertex(vec2(origin_.x + i * x_unit_, origin_.y + length));
-    tik_vert_batch->vertex(vec2(origin_.x + i * x_unit_, origin_.y - length));
-    tik_vert_batch->vertex(vec2(origin_.x + length, origin_.y + i * y_unit_));
-    tik_vert_batch->vertex(vec2(origin_.x - length, origin_.y + i * y_unit_));
+    tik_vert_batch_->vertex(vec2(origin_.x + i * x_unit_, origin_.y + length));
+    tik_vert_batch_->vertex(vec2(origin_.x + i * x_unit_, origin_.y - length));
+    tik_vert_batch_->vertex(vec2(origin_.x + length, origin_.y + i * y_unit_));
+    tik_vert_batch_->vertex(vec2(origin_.x - length, origin_.y + i * y_unit_));
   }
 
-
+  //Sets up each of the 4 arrows of at the end of the axes
 
   vec2 end(window_size_ - kGraphMargin, origin_.y);
   vec2 start(window_size_ - kGraphMargin - 10, origin_.y);
@@ -53,7 +56,7 @@ void GraphHandler::SetupTikMarkVertices() {
   start = vec2(origin_.x, kGraphMargin+10);
   SetupAxisArrowVerts(start, end, 2 * kArrowBase, kArrowHeight + 10);
 
-  mBatch = ci::gl::Batch::create(*tik_vert_batch, mGlslProg);
+  batch_ = ci::gl::Batch::create(*tik_vert_batch_, stock_shader_);
 }
 
 void GraphHandler::SetupAxisArrowVerts(const glm::vec2& start, const glm::vec2& end,
@@ -69,10 +72,10 @@ void GraphHandler::SetupAxisArrowVerts(const glm::vec2& start, const glm::vec2& 
   vec2 arrow_point_one = end - ((arrow_height) * direction_vec) - (-1*(arrow_base) * basis_vec / 2.0f);
   vec2 arrow_point_two = end - ((arrow_height) * direction_vec) - ((arrow_base) * basis_vec / 2.0f);
 
-  tik_vert_batch->vertex(end);
-  tik_vert_batch->vertex(arrow_point_one);
-  tik_vert_batch->vertex(end);
-  tik_vert_batch->vertex(arrow_point_two);
+  tik_vert_batch_->vertex(end);
+  tik_vert_batch_->vertex(arrow_point_one);
+  tik_vert_batch_->vertex(end);
+  tik_vert_batch_->vertex(arrow_point_two);
 }
 
 vec2 GraphHandler::GetOrigin() const {

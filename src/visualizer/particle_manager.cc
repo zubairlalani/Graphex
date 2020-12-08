@@ -12,12 +12,14 @@ void ParticleManager::DrawParticles() {
   ci::gl::color(kParticleColor);
   ci::gl::drawSolidCircle(kParticleShopPos, 5);
 
+  //Draw particles that are moving through the field
   for(int x=0; x<particles_.size(); x++) {
     ci::gl::drawSolidCircle(glm::vec2(particles_[x].GetXPosition(),
                                       particles_[x].GetYPosition()),
                             particles_[x].GetRadius());
   }
 
+  //Draw particles that are returning to particle shop
   for(int x=0; x<return_particles_.size(); x++) {
     ci::gl::drawSolidCircle(glm::vec2(return_particles_[x].GetXPosition(),
                                       return_particles_[x].GetYPosition()),
@@ -44,7 +46,7 @@ void ParticleManager::UpdateParticles(const string& i_comp, const string& j_comp
     }
   }
 
-
+  // Updates return particles position
   for(size_t i = 0; i<return_particles_.size(); i++) {
     vec2 dist = vec2(return_particles_[i].GetXPosition() - kParticleShopPos.x,
                      return_particles_[i].GetYPosition() - kParticleShopPos.y);
@@ -64,25 +66,32 @@ void ParticleManager::ClearParticles() {
 
 void ParticleManager::DrawMouseParticle(const vec2& pos) {
   ci::gl::color(kParticleColor);
+  // Draw a particle where the mouse cursor is
   ci::gl::drawSolidCircle(pos, 5);
 }
 
 void ParticleManager::AddReturnParticle(const vec2& pos) {
+
   for(size_t x = 0; x< particles_.size(); x++) {
     vec2 dist = vec2(pos.x - particles_[x].GetXPosition(),
                      pos.y - particles_[x].GetYPosition());
     double length = glm::length(dist);
     if(length < 10) {
+      // Make a vector from the particle to the particle shop
       vec2 dist_to_shop = vec2(kParticleShopPos.x - particles_[x].GetXPosition(),
                                particles_[x].GetYPosition() - kParticleShopPos.y);
+
+      // Calculate the project of the particle velocity vector onto the distance vector
       vec2 proj = (abs(glm::dot(particles_[x].GetVelocity(), dist_to_shop))/glm::length(dist_to_shop)) * dist_to_shop;
       proj/=glm::length(proj);
       vec2 new_velocity = kReturnVelocityMultiplier * proj;
+
       particles_[x].SetVelocity(new_velocity);
       return_particles_.push_back(particles_[x]);
       particles_.erase(particles_.begin()+x);
     }
   }
+
 }
 
 
@@ -98,7 +107,6 @@ void ParticleManager::DrawParticleShopBox() {
   ci::gl::vertex(kParticleShopPos.x-kShopBoxDist, kParticleShopPos.y+kShopBoxDist); // bottom left
   ci::gl::vertex(kParticleShopPos.x+kShopBoxDist, kParticleShopPos.y+kShopBoxDist); // bottom right
   ci::gl::vertex(kParticleShopPos.x+kShopBoxDist, kParticleShopPos.y-kShopBoxDist); // top right
-  //ci::gl::vertex(kParticleShopPos.x-kShopBoxDist, kParticleShopPos.y-kShopBoxDist); // top left
   ci::gl::end();
 }
 } // namespace vectorfield

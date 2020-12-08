@@ -13,14 +13,16 @@ namespace vectorfield {
   }
 
   glm::mat4 Camera::GetViewMatrix() {
+    // adding to front vector ensures that the
+    // camera always points to the right target
     return glm::lookAt(position_, position_ + front_, up_);
   }
 
   void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch) {
-    xoffset *= mouse_sensitivity_;
+    xoffset *= mouse_sensitivity_; // scales the offset based on how sensitive the mouse is
     yoffset *= mouse_sensitivity_;
 
-    yaw_ += xoffset;
+    yaw_ += xoffset; // Add to the euler angles so camera view changes
     pitch_ += yoffset;
 
     // make sure that when pitch is out of bounds, screen doesn't get flipped
@@ -37,6 +39,7 @@ namespace vectorfield {
   }
 
   void Camera::ProcessMouseScroll(float yoffset) {
+    //Adjusts zoom but also ensures there is a max and min to how much you can zoom in
     zoom_ -= (float)yoffset;
     if (zoom_ < 1.0f)
       zoom_ = 1.0f;

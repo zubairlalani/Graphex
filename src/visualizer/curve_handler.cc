@@ -8,6 +8,7 @@ CurveHandler::CurveHandler(const ci::Color &stroke_color)
 void CurveHandler::Render() const {
   ci::gl::color(stroke_color_);
 
+  //Connects all the points within each stroke
   if(!strokes_.empty()) {
     for(const std::vector<glm::vec2> &stroke : strokes_) {
       ci::gl::begin(GL_LINE_STRIP);
@@ -19,6 +20,7 @@ void CurveHandler::Render() const {
     }
   }
 
+  //Connects all points contained by each curve
   if(!graphs.empty()) {
     for(const auto & graph : graphs) {
       ci::gl::begin(GL_LINE_STRIP);
@@ -49,6 +51,7 @@ void CurveHandler::Clear() {
 }
 
 void CurveHandler::CalculateCurveForces(const string& i_comp, const string& j_comp) {
+  //Calculate the force along each stroke point
   if(!strokes_.empty()) {
     for(const std::vector<glm::vec2> &stroke : strokes_) {
       for(size_t point_index = 0; point_index < stroke.size(); point_index++) {
@@ -67,6 +70,8 @@ void CurveHandler::CalculateCurveForces(const string& i_comp, const string& j_co
 double CurveHandler::CalculateWork() {
 
   std::cout << "CALCULATING WORK....." << std::endl;
+
+  //Sums all the little work increments between each consecutive points
   double total_work = 0;
   if(!strokes_.empty()) {
     for(const std::vector<glm::vec2> &stroke : strokes_) {
@@ -89,6 +94,7 @@ double CurveHandler::CalculateWork() {
 }
 
 void CurveHandler::CalculateGraphCoordinates(int graph_scale, const string& equation) {
+  //For every a bunch of x values, calculates the y value and then saves those coordinates
   double stepSize = 0.01;
   for (double x = -graph_scale; x < graph_scale+1+stepSize/2; x+= stepSize)
   {

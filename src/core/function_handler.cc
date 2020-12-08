@@ -3,19 +3,27 @@
 namespace vectorfield {
 vec2 FunctionHandler::EvaluateFunction(const string& i_component, const string& j_component,
                                        double x_val, double y_val) {
+  //NOTE: symbol_table, i_expr, j_expr are not made member variables due to errors
+  // with using the same symbol tables and expr variables for different evaluations.
+  // May update this in the future
 
-  symbol_table_.add_variable("x", x_val);
-  symbol_table_.add_variable("y", y_val);
-  symbol_table_.add_constants();
+  exprtk::symbol_table<double> symbol_table; // Contains all symbols that will be used in the expression
+  symbol_table.add_variable("x", x_val);
+  symbol_table.add_variable("y", y_val);
+  symbol_table.add_constants(); // adds stuff like pi, log, infinity, etc to the symbol table
 
-  i_expr_.register_symbol_table(symbol_table_);
-  j_expr_.register_symbol_table(symbol_table_);
+  // string version of expression will be parsed into these vars
+  exprtk::expression<double> i_expr;
+  exprtk::expression<double> j_expr;
 
-  parser_.compile(i_component, i_expr_);
-  parser_.compile(j_component, j_expr_);
+  i_expr.register_symbol_table(symbol_table);
+  j_expr.register_symbol_table(symbol_table);
 
+  // Parses string expressions in the exprtk vars, and evaluates them
+  parser_.compile(i_component, i_expr);
+  parser_.compile(j_component, j_expr);
 
-  return vec2(i_expr_.value(), j_expr_.value());
+  return vec2(i_expr.value(), j_expr.value());
 }
 
 vec3 FunctionHandler::Evaluate3DFunction(const string& i_comp, const string& j_comp, const string& k_comp,
@@ -58,41 +66,54 @@ double FunctionHandler::SolveEquation(double x, const std::string& equation) {
 double FunctionHandler::EvaluateDivergence(const string& i_comp, const string& j_comp,
                                          double x_val, double y_val) {
 
+  exprtk::symbol_table<double> symbol_table;
+  symbol_table.add_variable("x", x_val);
+  symbol_table.add_variable("y", y_val);
+  symbol_table.add_constants();
 
-  symbol_table2_.add_variable("x", x_val);
-  symbol_table2_.add_variable("y", y_val);
-  symbol_table2_.add_constants();
+  exprtk::expression<double> i_expr;
+  exprtk::expression<double> j_expr;
 
-  i_expr_2.register_symbol_table(symbol_table2_);
-  j_expr_2.register_symbol_table(symbol_table2_);
+  i_expr.register_symbol_table(symbol_table);
+  j_expr.register_symbol_table(symbol_table);
 
-  parser2_.compile(i_comp, i_expr_2);
-  parser2_.compile(j_comp, j_expr_2);
+  parser_.compile(i_comp, i_expr);
+  parser_.compile(j_comp, j_expr);
 
-  double dPdx = exprtk::derivative(i_expr_2, "x");
-  double dQdy = exprtk::derivative(j_expr_2, "y");
+  // takes the derivative of one var while treating the other as a constant,
+  // so it is essentially a partial derivative
+  double dPdx = exprtk::derivative(i_expr, "x");
+  double dQdy = exprtk::derivative(j_expr, "y");
   return dPdx + dQdy;
 }
 
 double FunctionHandler::Evaluate2DCurl(const string& i_comp, const string& j_comp,
                                        double x_val, double y_val) {
 
-  symbol_table3_.add_variable("x", x_val);
-  symbol_table3_.add_variable("y", y_val);
-  symbol_table3_.add_constants();
+  exprtk::symbol_table<double> symbol_table;
+  symbol_table.add_variable("x", x_val);
+  symbol_table.add_variable("y", y_val);
+  symbol_table.add_constants();
 
-  i_expr_3.register_symbol_table(symbol_table3_);
-  j_expr_3.register_symbol_table(symbol_table3_);
+  exprtk::expression<double> i_expr;
+  exprtk::expression<double> j_expr;
 
-  parser2_.compile(i_comp, i_expr_3);
-  parser2_.compile(j_comp, j_expr_3);
+  i_expr.register_symbol_table(symbol_table);
+  j_expr.register_symbol_table(symbol_table);
 
-  double dPdy = exprtk::derivative(i_expr_3, "y");
-  double dQdx = exprtk::derivative(j_expr_3, "x");
+  parser_.compile(i_comp, i_expr);
+  parser_.compile(j_comp, j_expr);
+
+  double dPdy = exprtk::derivative(i_expr, "y");
+  double dQdx = exprtk::derivative(j_expr, "x");
   return dQdx - dPdy;
 }
 
 bool FunctionHandler::IsConservative(const string& i_comp, const string& j_comp, int scale, size_t accuracy_lvl) {
+  // Checking for conservativity usually requires symbolic integration/differentiation
+  // Avoided this by just checking the curl at many points
+  // When in R2, curl F = 0 everywhere on the field if the field is conservative
+  // So if at any point, the curl is not zero, then we know it is not conservative
   double epsilon = 0.001;
   srand(static_cast<unsigned>(time(0)));
   float random_x_val;

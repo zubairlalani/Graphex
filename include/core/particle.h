@@ -15,6 +15,7 @@ class Particle {
   /**
    * Initializes particle object with the specified radius
    * @param radius - radius of the particle
+   * @param pos - where on the screen the particle is initialized
    */
   Particle(size_t radius, const glm::vec2& pos);
 
@@ -25,16 +26,20 @@ class Particle {
   void UpdatePosition();
 
   /**
-   * Gets the x and y coordinates of the particle in the form of vec2
-   * @return 2d (math) vector representing x and y coordinates of particle
+   * Gets the x coordinate of the particle
+   * @return double value that represents the x coordinate of the particle
    */
   double GetXPosition() const;
 
+  /**
+   * Gets the y coordinate of the particle
+   * @return double value that represents the y coordinate of the particle
+   */
   double GetYPosition() const;
 
   /**
    * Get x and y components of velocity_ as a vec2
-   * @return 2d (math) vector representing x and y velocity components
+   * @return vec2 representing x and y velocity components
    */
   glm::vec2 GetVelocity() const;
 
@@ -57,6 +62,10 @@ class Particle {
    */
   void SetVelocity(const glm::vec2& vel);
 
+  /**
+   * Gives the position where the particle was initially placed
+   * @return vec2 represent x and y coordinates where the particle was initially placed
+   */
   glm::vec2 GetInitialPos() const;
 
  private:
@@ -64,7 +73,7 @@ class Particle {
   glm::vec2 position_; // Keeps track of x and y coordinates
   glm::vec2 velocity_;    // Keeps track of x and y components of velocity_
   size_t radius_;         // radius of a single circular particle
-  glm::vec2 initial_pos_;
+  glm::vec2 initial_pos_; // initial position of the particle
 
 };
 } // namespace vectorfield

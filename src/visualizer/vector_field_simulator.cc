@@ -76,6 +76,7 @@ void FieldSimulator::draw() {
     CalculateMVPMatrix(); // In order to convert coordinates from model space to screen space
 
     glBindVertexArray(vao_);
+    // Draws lines between between vertices in Vertex Array Object
     glDrawArrays(GL_LINES, 0,
                  vertex_amnt_); // vertex_amnt_ = arrow vertices + axis vertices
     glBindVertexArray(0); // unbind
@@ -172,11 +173,11 @@ void FieldSimulator::mouseDrag(ci::app::MouseEvent event) {
   }
 
   if(toggle3d && event.isRightDown()) {
+
     if (first_mouse_) {
       mousePos = event.getPos();
       first_mouse_ = false;
     }
-
     float xoffset = event.getX() - mousePos.x;
     float yoffset = mousePos.y - event.getY();
     mousePos = event.getPos();
