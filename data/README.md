@@ -18,7 +18,7 @@
  
 ![vector field gif](https://github.com/zubairlalani/Graphex/blob/main/3DVectorFieldSample.gif)
 
-![vector field gif](https://github.com/zubairlalani/Graphex/blob/main/3DVectorFieldSample.gif)
+![vector field gif](https://github.com/zubairlalani/Graphex/blob/main/2DVectorFieldFeatures.gif)
 
 ### Dependencies    
 Running the simulation will require:
