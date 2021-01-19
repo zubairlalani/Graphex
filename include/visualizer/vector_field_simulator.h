@@ -216,6 +216,7 @@ class FieldSimulator : public ci::app::App {
   //3D stuff
   Shader shader_ = Shader("visualizer/shader.vs", "visualizer/shader.fs"); // Custom shader wrapper
   unsigned int vbo_, vao_; // IDs used to tell openGL to graph the vertices in the buffer
+
   glm::mat4 model, view, projection; // matrices used to transform 3d coordinate system into a 2d world
 
   //Axis stuff

@@ -16,7 +16,7 @@
  - Particle simulations in vector fields
  - 3D camera movement
 
-### Dependencies
+### Dependencies    
 Running the simulation will require:
 - CMake
 - Cinder v0.9.2 and above
