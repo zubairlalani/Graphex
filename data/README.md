@@ -16,6 +16,8 @@
  - Particle simulations in vector fields
  - 3D camera movement
 
+![vector field gif](https://github.com/zubairlalani/Graphex/blob/main/3DVectorFieldSample.gif)
+
 ### Dependencies    
 Running the simulation will require:
 - CMake
